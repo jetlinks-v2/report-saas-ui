@@ -1,3 +1,4 @@
+import i18n from '@jetlinks-web-core/locales'
 import type { RepairFormOptions } from '../types'
 export interface PublicOption {id:string;name:string;kind:string;parentId:string;content:string}
 export interface PublicSpace {id:string;name:string;parentId:string;selectable:boolean;positionType:number}
@@ -8,11 +9,11 @@ export interface PublicInput {urgency?:number;categoryId?:string;spaceId?:string
 async function publicRequest<T>(code:string,suffix:string,body?:FormData|PublicInput):Promise<T> {
   const response=await fetch('/api/repair/public/qr/'+encodeURIComponent(code)+suffix,{
     method:body?'POST':'GET',credentials:'omit',
-    headers:body instanceof FormData?{}:body?{'Content-Type':'application/json'}:{},
+    headers:{'Accept-Language':i18n.global.locale.value,...(body&&!(body instanceof FormData)?{'Content-Type':'application/json'}:{})},
     ...(body?{body:body instanceof FormData?body:JSON.stringify(body)}:{})
   })
   const content=await response.json()
-  if(!response.ok||content.status!==200)throw new Error(content.message||'二维码不可用，请联系物业工作人员')
+  if(!response.ok||content.status!==200)throw new Error(content.message||i18n.global.t('ReportRepair.qrUnavailable'))
   return content.result as T
 }
 export const getPublicRepairForm=(code:string)=>publicRequest<PublicForm>(code,'')

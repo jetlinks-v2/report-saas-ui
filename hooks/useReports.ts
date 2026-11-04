@@ -1,3 +1,4 @@
+import i18n from '@jetlinks-web-core/locales'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { buildQueryFilter, encodeConditionFilterQuery, decodeConditionFilterQuery, type ConditionTerm } from '@jetlinks-web-core/components/ConditionFilter'
@@ -7,6 +8,7 @@ import type { ExportType, Order, Query, ReportRow, SelectOption } from '../types
 import { displayName, errorMessage, result } from '../utils'
 import { reportColumns, reportFields, reportPages, orderFilterFields, canDrillReport, reportOrderQuery } from '../services/reports'
 import { useRepairPermissions } from './useRepairPermissions'
+const { t } = i18n.global
 
 /** 报表保留旧菜单的不同口径，页面只共享筛选和加载编排。 */
 export function useReports(){
@@ -35,7 +37,7 @@ export function useReports(){
  const startExport=()=>{exportScope.value='all';exportOpen.value=true}
  const exportData=async()=>{if(exporting.value||!canExport.value)return;exporting.value=true;error.value='';try{
   const task=result(await createExport(query(exportScope.value==='all'),{type:page.value.mode as ExportType}));exportOpen.value=false
-  message.success(`已导出 ${task.rowCount} 行${page.value.title}，请在导出管理下载`)
+  message.success(t('ReportRepair.exportedRowsOfDownloadTheFileFromExports', { p0: task.rowCount, p1: page.value.title }))
  }catch(e){error.value=errorMessage(e)}finally{exporting.value=false}}
  let ready=false
  watch(()=>[route.path,route.query.q],([path,q],[oldPath])=>{if(ready&&(path!==oldPath||encodeConditionFilterQuery(terms.value,fields.value)!==(q||''))){terms.value=decodeConditionFilterQuery(q,fields.value);current.value=1;rows.value=[];orders.value=[];void load()}})

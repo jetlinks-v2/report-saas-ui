@@ -1,6 +1,8 @@
+import i18n from '@jetlinks-web-core/locales'
 import { getModuleRoutesMap } from '@jetlinks-web/utils'
 import { defineAsyncComponent } from 'vue'
 import { RouteSecurityLevel, type ModuleRouteOverride } from '@jetlinks-web-core/router/types'
+const { t } = i18n.global
 const views = import.meta.glob('./views/**/index.vue')
 export default {
   getAsyncRoutesMap: () => getModuleRoutesMap(views),
@@ -10,6 +12,6 @@ export default {
   }],
   getCoreRouteOverrides: ():ModuleRouteOverride[] => [{
     name:'repair-public-intake',path:'/public/repair/:code',component:()=>import('./views/repair/Public/index.vue'),
-    meta:{security:RouteSecurityLevel.PUBLIC,skipMenuFetch:true,hideInMenu:true,title:'报事报修'}
+    meta:{security:RouteSecurityLevel.PUBLIC,skipMenuFetch:true,hideInMenu:true,title:t('ReportRepair.issuesAndRepairs')}
   }]
 }

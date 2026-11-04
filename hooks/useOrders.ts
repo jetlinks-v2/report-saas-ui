@@ -1,3 +1,4 @@
+import i18n from '@jetlinks-web-core/locales'
 import { useRoute, useRouter } from 'vue-router'
 import { computed, onMounted, onBeforeUnmount, reactive, ref, watch, nextTick } from 'vue'
 import { buildQueryFilter, encodeConditionFilterQuery, type ConditionTerm, type ConditionExpressionNode } from '@jetlinks-web-core/components/ConditionFilter'
@@ -10,6 +11,7 @@ import { message } from 'ant-design-vue'
 import * as api from '../api'
 import type { ActionInput, Authorization, Configuration, Order, Process, Review, SharedRecord } from '../types'
 import { actionNames, displayName, errorMessage, result } from '../utils'
+const { t } = i18n.global
 /** 工单处置状态与请求编排；状态迁移、权限和责任人资格始终由服务端判定。 */
 export function useOrders() {
   const route=useRoute(),router=useRouter()
@@ -30,7 +32,7 @@ export function useOrders() {
   const projectOptions=computed(()=>options(projects.value)), personOptions=computed(()=>options(people.value))
   const actionUploading=ref(false)
   const completionReadOnly=computed(()=>action.value==='finish'&&!!selected.value&&!!signedCompletion(selected.value,history.value,reviews.value))
-  const completionTypes=computed(()=>[{value:'finish',label:'正常关单'},...(can('close')&&!selected.value?.paid?[{value:'close',label:'非正常关单'}]:[])])
+  const completionTypes=computed(()=>[{value:'finish',label:t('ReportRepair.normalClosure')},...(can('close')&&!selected.value?.paid?[{value:'close',label:t('ReportRepair.abnormalClosure')}]:[])])
   const actionCategoryTree=computed(()=>categoryTree(configurations.value))
   const actionCategoryPath=computed(()=>categoryPath(configurations.value,actionForm.categoryId))
   const categoryOptions=computed(()=>configurations.value.filter(row=>row.kind==='category'&&categoryPath(configurations.value,row.id).length===3).map(row=>({value:row.id!,label:row.name})))
@@ -59,7 +61,7 @@ export function useOrders() {
       const task=result(await api.createExport(query,auditMode.value?{
         type:'review',...(exportScope.value==='current'?{reviewStatus:reviewStatus.value,reviewKind:reviewKind.value}:{})
       }:{}));exportOpen.value=false
-      message.success(`已导出 ${task.rowCount} 条${auditMode.value?'审核记录':'工单'}，请在“导出管理”下载`)
+      message.success(t('ReportRepair.exportedDownloadTheFileFromExports', { p0: task.rowCount, p1: auditMode.value?t('ReportRepair.reviewRecords'):t('ReportRepair.orders') }))
     }catch(e){exportError.value=errorMessage(e)}finally{exporting.value=false}
   }
   const availableActions=computed(()=>{
@@ -157,10 +159,10 @@ export function useOrders() {
   }
   const submitAction=async()=>{
     if(!selected.value)return
-    if(actionUploading.value){message.warning('请等待附件上传完成');return}
+    if(actionUploading.value){message.warning(t('ReportRepair.waitForAttachmentsToFinishUploading'));return}
     try{await actionFormRef.value?.validate()}catch{return}
     saving.value=true;error.value=''
-    try{const order=result(await api.actOnOrder(selected.value,action.value,actionForm,requestId.value));actionOpen.value=false;await load();await showDetail(order);message.success(`${actionNames[action.value]}成功`)}
+    try{const order=result(await api.actOnOrder(selected.value,action.value,actionForm,requestId.value));actionOpen.value=false;await load();await showDetail(order);message.success(t('ReportRepair.succeeded', { p0: actionNames[action.value] }))}
     catch(e){error.value=errorMessage(e)}finally{saving.value=false}
   }
   const changeCompletionType=async(name:string)=>{

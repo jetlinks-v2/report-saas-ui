@@ -1,13 +1,15 @@
+import i18n from '@jetlinks-web-core/locales'
 import type { ConditionFilterField, ConditionTerm } from '@jetlinks-web-core/components/ConditionFilter'
 import type { CategoryOption, Configuration } from '../types'
 import { categoryPath } from './intake'
+const { t } = i18n.global
 
 /** 分类与普通字典沿用统一条件模型，分类选中项包含下级，名称始终按原文编码。 */
 export function configurationFilterFields(kind:string,rows:Configuration[]):ConditionFilterField[] {
-  const names:Record<string,string>={channel:'渠道名称',category:'分类名称',label:'标签名称',evaluationLabel:'标签名称'}
+  const names:Record<string,string>={channel:t('ReportRepair.channelName'),category:t('ReportRepair.categoryName'),label:t('ReportRepair.tagName'),evaluationLabel:t('ReportRepair.tagName')}
   if(!names[kind])return []
   const fields:ConditionFilterField[]=[{title:names[kind],dataIndex:'name',search:{type:'string'}}]
-  if(kind==='category')fields.unshift({title:'报事分类',dataIndex:'id',search:{type:'select',termTypeOptions:['in','nin'],options:rows.filter(row=>row.kind==='category').map(row=>({value:row.id,label:categoryPath(rows,row.id).map(id=>rows.find(item=>item.id===id)?.name).join(' / ')}))}})
+  if(kind==='category')fields.unshift({title:t('ReportRepair.issueCategory'),dataIndex:'id',search:{type:'select',termTypeOptions:['in','nin'],options:rows.filter(row=>row.kind==='category').map(row=>({value:row.id,label:categoryPath(rows,row.id).map(id=>rows.find(item=>item.id===id)?.name).join(' / ')}))}})
   return fields
 }
 

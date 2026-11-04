@@ -1,14 +1,14 @@
 <template>
   <aside class="category-panel">
-    <a-space class="category-heading"><strong>分类名称</strong><a-button v-if="state.canSave" type="link" @click="emit('add')">新增一级分类</a-button></a-space>
-    <a-button v-if="state.selectedKeys.length" type="link" @click="emit('select',[])">清除分类筛选</a-button>
+    <a-space class="category-heading"><strong>{{$t('ReportRepair.categoryName')}}</strong><a-button v-if="state.canSave" type="link" @click="emit('add')">{{$t('ReportRepair.addRootCategory')}}</a-button></a-space>
+    <a-button v-if="state.selectedKeys.length" type="link" @click="emit('select',[])">{{$t('ReportRepair.clearCategoryFilter')}}</a-button>
     <a-spin :spinning="state.loading">
-      <a-empty v-if="!state.nodes.length" description="暂无报事分类" />
+      <a-empty v-if="!state.nodes.length" :description="$t('ReportRepair.noIssueCategories')" />
       <a-tree v-else :tree-data="state.nodes" :selected-keys="state.selectedKeys" :default-expand-all="true" block-node @select="(keys:(string|number)[])=>emit('select',keys.map(String))">
         <template #title="node">
           <div class="category-node"><span :title="node.title">{{node.title}}</span><a-space v-if="state.canSave&&node.row" :size="0">
-            <a-button v-if="node.depth<3" type="link" size="small" @click.stop="emit('add',node.row)">添加</a-button>
-            <a-button type="link" size="small" @click.stop="emit('edit',node.row)">编辑</a-button><a-popconfirm title="删除此分类？存在子级或引用时将拒绝删除。" @confirm="emit('remove',node.row)"><a-button type="link" size="small" danger @click.stop>删除</a-button></a-popconfirm>
+            <a-button v-if="node.depth<3" type="link" size="small" @click.stop="emit('add',node.row)">{{$t('ReportRepair.addCategoryChild')}}</a-button>
+            <a-button type="link" size="small" @click.stop="emit('edit',node.row)">{{$t('ReportRepair.edit')}}</a-button><a-popconfirm :title="$t('ReportRepair.deleteThisCategoryCategoriesWithChildrenOrReferencesCannot')" @confirm="emit('remove',node.row)"><a-button type="link" size="small" danger @click.stop>{{$t('ReportRepair.delete')}}</a-button></a-popconfirm>
           </a-space></div>
         </template>
       </a-tree>
@@ -16,8 +16,10 @@
   </aside>
 </template>
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import type { Configuration } from '../types'
 import type { ConfigurationTreeNode } from '../services/configurationSearch'
+const { t: $t } = useI18n()
 defineProps<{state:{nodes:ConfigurationTreeNode[];selectedKeys:string[];canSave:boolean;loading:boolean}}>()
 const emit=defineEmits<{add:[parent?:Configuration];edit:[row:Configuration];remove:[row:Configuration];select:[keys:string[]]}>()
 </script>

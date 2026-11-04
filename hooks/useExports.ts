@@ -1,3 +1,4 @@
+import i18n from '@jetlinks-web-core/locales'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { buildQueryFilter, decodeConditionFilterQuery, encodeConditionFilterQuery, type ConditionFilterField, type ConditionTerm } from '@jetlinks-web-core/components/ConditionFilter'
@@ -5,14 +6,15 @@ import { downloadExport, queryExports } from '../api'
 import type { ExportTask } from '../types'
 import { errorMessage, result } from '../utils'
 import { useRepairPermissions } from './useRepairPermissions'
+const { t } = i18n.global
 /** 下载复用当前应用的认证请求，不把令牌放入URL。 */
 export function useExports(){
  const route=useRoute(),router=useRouter()
  const fields:ConditionFilterField[]=[
-  {title:'文件名',dataIndex:'name',search:{type:'string'}},
-  {title:'导出人',dataIndex:'creatorName',search:{type:'string'}},
-  {title:'创建时间',dataIndex:'createTime',search:{type:'date'}},
-  {title:'状态',dataIndex:'status',search:{type:'select',options:[{value:'processing',label:'导出中'},{value:'completed',label:'导出成功'},{value:'failed',label:'导出失败'}]}},
+  {title:t('ReportRepair.fileName'),dataIndex:'name',search:{type:'string'}},
+  {title:t('ReportRepair.exportedBy'),dataIndex:'creatorName',search:{type:'string'}},
+  {title:t('ReportRepair.created'),dataIndex:'createTime',search:{type:'date'}},
+  {title:t('ReportRepair.status'),dataIndex:'status',search:{type:'select',options:[{value:'processing',label:t('ReportRepair.exporting')},{value:'completed',label:t('ReportRepair.exported')},{value:'failed',label:t('ReportRepair.exportFailed')}]}},
  ]
  const terms=ref<ConditionTerm[]>(decodeConditionFilterQuery(route.query.q,fields))
  const {can,loadPermissions}=useRepairPermissions(),canDownload=computed(()=>can('repair-order','export'))
@@ -25,8 +27,8 @@ export function useExports(){
  const download=async(task:ExportTask)=>{if(!canDownload.value||task.status!=='completed'||downloading.value)return;downloading.value=task.id;error.value='';try{
   const response=await downloadExport(task.id)
   const blob=response instanceof Blob?response:response.data
-  if(!(blob instanceof Blob))throw Error('下载失败')
-  if(blob.type.includes('json')){const failure=JSON.parse(await blob.text());throw Error(failure.message||'下载失败')}
+  if(!(blob instanceof Blob))throw Error(t('ReportRepair.downloadFailed'))
+  if(blob.type.includes('json')){const failure=JSON.parse(await blob.text());throw Error(failure.message||t('ReportRepair.downloadFailed'))}
   const url=URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;anchor.download=task.name;anchor.click();URL.revokeObjectURL(url)
  }catch(e){error.value=errorMessage(e)}finally{downloading.value=''}}
  onMounted(async()=>{try{await loadPermissions();await load()}catch(e){error.value=errorMessage(e)}})

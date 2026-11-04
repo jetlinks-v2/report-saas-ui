@@ -1,3 +1,4 @@
+import i18n from '@jetlinks-web-core/locales'
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { message } from 'ant-design-vue'
@@ -8,6 +9,7 @@ import { queryOrders } from '../api'
 import { createOrderDing } from '../services/orderDing'
 import { normalizeSoundSettings, OrderSoundMonitor } from '../services/orderSoundMonitor'
 import { errorMessage, result } from '../utils'
+const { t } = i18n.global
 
 const orderMenu = 'repair-ae6a50b29308426b932b94d33f8bab18'
 interface RepairNotice { id?: string; topicProvider?: string; detail?: { applicationId?: string; orderId?: string } }
@@ -31,10 +33,10 @@ export function useOrderSound() {
     play: async () => { if (unlockPending) await unlockPending; return sound.play() },
     stopPlayback: sound.stop,
     onBlocked: () => {
-      if (!blocked.value) message.warning('新工单提示音播放受阻，请点击右上角“工单提示音”开启声音。')
+      if (!blocked.value) message.warning(t('ReportRepair.newOrderSoundWasBlockedUseOrderSoundIn'))
       blocked.value = true
     },
-    onQueryError: value => { pollingError.value = value ? '待分派工单刷新失败，将在下次刷新重试。' : '' },
+    onQueryError: value => { pollingError.value = value ? t('ReportRepair.unableToRefreshUnassignedOrdersTheNextRefreshWill') : '' },
   })
   const { send, unSubscribe } = useWebSocket<{payload?:RepairNotice}>({
     onMessage: (event) => {
@@ -80,7 +82,7 @@ export function useOrderSound() {
   const save = async () => {
     if (loading.value || saving.value || !contextKey.value) return
     if (![form.repeatTimes,form.intervalMinutes].every(value => Number.isSafeInteger(value) && value > 0)) {
-      error.value = '重复次数和刷新间隔须为正整数。'; return
+      error.value = t('ReportRepair.repeatCountAndRefreshIntervalMustBePositiveIntegers'); return
     }
     const own = revision
     saving.value = true; error.value = ''
@@ -89,7 +91,7 @@ export function useOrderSound() {
       await saveOrderSoundSettings(value)
       if (own !== revision) return
       saved.value = value; blocked.value = false; apply(); open.value = false
-      message.success('个人工单提示音设置已保存')
+      message.success(t('ReportRepair.personalOrderSoundSettingsSaved'))
     } catch (value) { if (own === revision) error.value = errorMessage(value) }
     finally { if (own === revision) saving.value = false }
   }
@@ -101,7 +103,7 @@ export function useOrderSound() {
     const success = await sound.play()
     if (own !== revision) return
     if (success) { blocked.value = false; void monitor.resume() }
-    else { blocked.value = true; error.value = '播放失败，请检查浏览器站点声音或自动播放设置后重试。' }
+    else { blocked.value = true; error.value = t('ReportRepair.playbackFailedCheckTheBrowserSoundOrAutoplaySettings') }
   }
   const gesture = () => { if (blocked.value || saved.value.enabled) void unlock() }
   window.addEventListener('pointerdown', gesture)

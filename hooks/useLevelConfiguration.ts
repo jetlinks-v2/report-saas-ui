@@ -1,3 +1,4 @@
+import i18n from '@jetlinks-web-core/locales'
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { message, type FormInstance } from 'ant-design-vue'
 import { useBusinessApplicationStore } from '@jetlinks-web-core/store'
@@ -6,6 +7,7 @@ import type { Configuration, SelectOption } from '../types'
 import { initialConfiguration } from '../services/configuration'
 import { displayName, errorMessage, result } from '../utils'
 import { useRepairPermissions } from './useRepairPermissions'
+const { t } = i18n.global
 
 /** 等级列表与内联编辑共用当前业务项目；切换项目丢弃草稿并拒绝迟到响应。 */
 export function useLevelConfiguration() {
@@ -19,11 +21,11 @@ export function useLevelConfiguration() {
   const form = reactive<Configuration>({ kind: 'level', businessProjectId: '', name: '', enabled: true, configuration: initialConfiguration('level') })
   const visibleRows = computed(() => rows.value.filter(row => row.name.toLocaleLowerCase().includes(keyword.value.toLocaleLowerCase())))
   const previewNodes = computed(() => [
-    { key: 'start', title: '报事完成', type: 'normal' },
-    { key: 'callback', title: '回访判断', type: 'normal' },
-    ...(form.configuration.auditRequired ? [{ key: 'audit', title: '等级审核', type: 'audit' }] : []),
-    ...(form.configuration.thirdParty ? [{ key: 'third', title: '第三方系统', type: 'third' }] : []),
-    { key: 'archive', title: '归档', type: 'done' },
+    { key: 'start', title: t('ReportRepair.issueCompleted'), type: 'normal' },
+    { key: 'callback', title: t('ReportRepair.followUpVisitDecision'), type: 'normal' },
+    ...(form.configuration.auditRequired ? [{ key: 'audit', title: t('ReportRepair.priorityReview'), type: 'audit' }] : []),
+    ...(form.configuration.thirdParty ? [{ key: 'third', title: t('ReportRepair.thirdPartySystem'), type: 'third' }] : []),
+    { key: 'archive', title: t('ReportRepair.archive'), type: 'done' },
   ])
   const select = (row?: Configuration) => {
     Object.assign(form, { id: undefined, kind: 'level', businessProjectId: businessProjectId.value || '', name: '', enabled: true,
@@ -56,13 +58,13 @@ export function useLevelConfiguration() {
       const configuration = { ...form.configuration, auditRoleId: form.configuration.auditRequired ? form.configuration.auditRoleId : undefined,
         auditRoleName: form.configuration.auditRequired ? roleOptions.value.find(role => role.value === form.configuration.auditRoleId)?.label : undefined }
       const saved = result(await saveConfiguration({ ...form, configuration }))
-      select(saved); await load(); message.success('保存成功')
+      select(saved); await load(); message.success(t('ReportRepair.savedSuccessfully'))
     } catch (e) { error.value = errorMessage(e) } finally { saving.value = false }
   }
   const remove = async () => {
     if (!form.id) return
     saving.value = true; error.value = ''
-    try { result(await deleteConfiguration(form.id)); select(); await load(true); message.success('删除成功') }
+    try { result(await deleteConfiguration(form.id)); select(); await load(true); message.success(t('ReportRepair.deletedSuccessfully')) }
     catch (e) { error.value = errorMessage(e) } finally { saving.value = false }
   }
   watch(businessProjectId, () => { keyword.value = ''; select(); void load(true) })

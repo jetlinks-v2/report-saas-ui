@@ -1,5 +1,7 @@
+import i18n from '@jetlinks-web-core/locales'
 import { resolveFormOptions } from './formOptions'
 import type { CategoryOption, Configuration, OrderInput, SharedRecord, RepairFormOptions } from '../types'
+const { t } = i18n.global
 
 /** 以父子 ID 构造三级分类，父节点仅用于导航，提交时取末级 ID。 */
 export function categoryTree(rows: Configuration[], parentId?: string, depth = 1): CategoryOption[] {
@@ -16,16 +18,16 @@ export function categoryPath(rows: Configuration[], id?: string): string[] {
   return path
 }
 export function intakeError(form: OrderInput, path: string[], uploading: boolean, flags:RepairFormOptions=resolveFormOptions()): string | undefined {
-  if (uploading) return '请等待附件上传完成'
-  if (!form.businessProjectId) return '请选择报事项目'
-  if (!form.channelId) return '请先配置并启用后台报事渠道'
-  if (path.length !== 3 || !form.categoryId) return '请选择第三级报事分类'
-  if (flags.showReportLabel&&!form.labelIds.length) return '请选择报事标签'
-  if (!form.contactName.trim()) return '请输入报事人'
-  if (/\s/.test(form.contactName.trim())) return '报事人中间不能有空白'
-  if (!/^1[3-9]\d{9}$|^(0\d{2,3}-?)?\d{7,8}$/.test(form.contactPhone)) return '请输入正确的电话号码或座机号'
-  if (!form.description.trim()) return '请输入报事描述'
-  if (form.description.length > 800) return '报事描述不能超过800字'
+  if (uploading) return t('ReportRepair.waitForAttachmentsToFinishUploading')
+  if (!form.businessProjectId) return t('ReportRepair.selectAReportingProject')
+  if (!form.channelId) return t('ReportRepair.configureAndEnableAStaffReportingChannelFirst')
+  if (path.length !== 3 || !form.categoryId) return t('ReportRepair.selectAThirdLevelIssueCategory')
+  if (flags.showReportLabel&&!form.labelIds.length) return t('ReportRepair.selectIssueTags')
+  if (!form.contactName.trim()) return t('ReportRepair.enterTheReporterName')
+  if (/\s/.test(form.contactName.trim())) return t('ReportRepair.theReporterNameMustNotContainWhitespace')
+  if (!/^1[3-9]\d{9}$|^(0\d{2,3}-?)?\d{7,8}$/.test(form.contactPhone)) return t('ReportRepair.enterAValidMobileOrLandlineNumber')
+  if (!form.description.trim()) return t('ReportRepair.enterAnIssueDescription')
+  if (form.description.length > 800) return t('ReportRepair.issueDescriptionsMustNotExceed800Characters')
 }
 
 /** 不可访问的父空间不补查、不展示；将其可见子节点提升为根，防止权限树丢项。 */

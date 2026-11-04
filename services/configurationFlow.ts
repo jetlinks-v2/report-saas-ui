@@ -1,13 +1,15 @@
+import i18n from '@jetlinks-web-core/locales'
 import type { ConditionFilterField, ConditionTerm } from '@jetlinks-web-core/components/ConditionFilter'
 import type { CategoryOption, ConfigurationData, Configuration, SelectOption } from '../types'
 import { categoryPath } from './intake'
+const { t } = i18n.global
 
 /** 分类可选父节点，查询时包含其下所有分类；流程操作人和时间与分类本身独立。 */
 export function flowFilterFields(rows:Configuration[]):ConditionFilterField[] {
   return [
-    {title:'报事分类',dataIndex:'flowCategoryId',search:{type:'select',termTypeOptions:['in','nin'],options:rows.filter(row=>row.kind==='category').map(row=>({value:row.id,label:categoryPath(rows,row.id).map(id=>rows.find(item=>item.id===id)?.name).join(' / ')}))}},
-    {title:'操作人',dataIndex:'flowCreatorName',search:{type:'string'}},
-    {title:'更新时间',dataIndex:'flowModifyTime',search:{type:'date'}},
+    {title:t('ReportRepair.issueCategory'),dataIndex:'flowCategoryId',search:{type:'select',termTypeOptions:['in','nin'],options:rows.filter(row=>row.kind==='category').map(row=>({value:row.id,label:categoryPath(rows,row.id).map(id=>rows.find(item=>item.id===id)?.name).join(' / ')}))}},
+    {title:t('ReportRepair.operator'),dataIndex:'flowCreatorName',search:{type:'string'}},
+    {title:t('ReportRepair.updated'),dataIndex:'flowModifyTime',search:{type:'date'}},
   ]
 }
 
@@ -38,7 +40,7 @@ export function flowRoleNames(row:Configuration,roles:SelectOption[]):Record<str
   }))
 }
 export function flowRoleName(row:Configuration,key:typeof roleKeys[number],roles:SelectOption[]):string {
-  return row.configuration.flowRoleNames?.[key]||roles.find(role=>role.value===row.configuration[key])?.label||(row.configuration[key]?'角色已不可用':'—')
+  return row.configuration.flowRoleNames?.[key]||roles.find(role=>role.value===row.configuration[key])?.label||(row.configuration[key]?t('ReportRepair.roleUnavailable'):'—')
 }
 
 

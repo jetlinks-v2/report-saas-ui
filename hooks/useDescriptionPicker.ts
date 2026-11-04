@@ -1,5 +1,7 @@
+import i18n from '@jetlinks-web-core/locales'
 import { computed, ref, watch } from 'vue'
 import type { SelectOption } from '../types'
+const { t } = i18n.global
 
 /** 描述勾选为弹窗草稿，确认后才写入表单；取消保留原始选择。 */
 export function useDescriptionPicker(props:{value:string[];options:SelectOption[]},update:(value:string[])=>void) {
@@ -7,7 +9,7 @@ export function useDescriptionPicker(props:{value:string[];options:SelectOption[
   const groups=computed(()=>{
     const grouped=new Map<string,SelectOption[]>()
     props.options.filter(row=>row.label.includes(search.value)||row.group?.includes(search.value)).forEach(row=>{
-      const name=row.group||'报事描述';grouped.set(name,[...(grouped.get(name)||[]),row])
+      const name=row.group||t('ReportRepair.issueDescription');grouped.set(name,[...(grouped.get(name)||[]),row])
     })
     return [...grouped].map(([name,items])=>({name,items}))
   })

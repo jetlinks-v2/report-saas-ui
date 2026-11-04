@@ -1,3 +1,4 @@
+import i18n from '@jetlinks-web-core/locales'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { encodeConditionFilterQuery } from '@jetlinks-web-core/components/ConditionFilter'
@@ -7,6 +8,7 @@ import type { EChartsCoreOption } from 'echarts/core'
 import { queryDashboard, queryStatistics, queryProjects } from '../api'
 import type { Dashboard, ReportRow } from '../types'
 import { errorMessage, result, statusNames } from '../utils'
+const { t } = i18n.global
 
 /** 全量卡片和项目占比不随走势日期切换；图表按上海时区补零，复用后端资产查询范围。 */
 export function useOverview() {
@@ -17,8 +19,8 @@ export function useOverview() {
   const dashboard=ref<Dashboard>({trend:[],urgency:[],category:[]})
   const overall=computed(()=>summary.value.reduce((sum,row)=>sum+Number(row.total||0),0))
   const cards=computed(()=>[
-    {name:'报事总数',count:overall.value,clickable:true},{name:'项目总数',count:projectTotal.value},
-    {name:'活跃项目数',count:summary.value.length},{name:'静默项目数',count:Math.max(0,projectTotal.value-summary.value.length)},
+    {name:t('ReportRepair.totalIssues'),count:overall.value,clickable:true},{name:t('ReportRepair.totalProjects'),count:projectTotal.value},
+    {name:t('ReportRepair.activeProjects'),count:summary.value.length},{name:t('ReportRepair.inactiveProjects'),count:Math.max(0,projectTotal.value-summary.value.length)},
   ])
   const counts=computed(()=>[0,6,7,1,8,9,5].map((status,index)=>({name:statusNames[status],count:summary.value.reduce((sum,row)=>sum+Number(row[['noDistributed','waitAccept','waitFollow','handling','waitCallback','waitAudit','archived'][index]]||0),0)})))
   const projects=computed(()=>summary.value.map<ReportRow & {rate:number}>(row=>({...row,rate:overall.value?Number((Number(row.total)/overall.value*100).toFixed(2)):0}))
@@ -42,15 +44,15 @@ export function useOverview() {
     return rows
   })
   const trendOption=computed<EChartsCoreOption>(()=>({tooltip:{trigger:'axis'},legend:{bottom:0},grid:{left:45,right:20,top:20,bottom:65},xAxis:{type:'category',data:trend.value.map(row=>row.name)},yAxis:{type:'value',minInterval:1},series:([
-    ['total','报事总数','bar'],['noDistributed','待分派','line'],['handling','处理中','line'],['abandoned','已废弃','line']
+    ['total',t('ReportRepair.totalIssues'),'bar'],['noDistributed',t('ReportRepair.awaitingAssignment'),'line'],['handling',t('ReportRepair.inProgress'),'line'],['abandoned',t('ReportRepair.statusDiscarded'),'line']
   ] as const).map(([key,name,type])=>({name,type,data:trend.value.map(row=>row[key])}))}))
   const pie=(rows:{name:string;total:number}[]):EChartsCoreOption=>({tooltip:{trigger:'item'},legend:{bottom:0},series:[{type:'pie',radius:['40%','65%'],center:['50%','44%'],data:rows.map(row=>({name:row.name,value:row.total})),label:{formatter:'{b}: {c}'}}]})
-  const urgencyOption=computed(()=>pie(dashboard.value.urgency.map(row=>({...row,name:({'0':'未设置','1':'一般','2':'紧急','3':'非常紧急'} as Record<string,string>)[row.name]||row.name}))))
+  const urgencyOption=computed(()=>pie(dashboard.value.urgency.map(row=>({...row,name:({'0':t('ReportRepair.notSet'),'1':t('ReportRepair.urgencyNormal'),'2':t('ReportRepair.urgent'),'3':t('ReportRepair.veryUrgent')} as Record<string,string>)[row.name]||row.name}))))
   const categoryOption=computed(()=>pie(dashboard.value.category))
   let sequence=0
   const load=async()=>{
     if(!range.value?.[0]||!range.value?.[1])return
-    if(range.value[1].diff(range.value[0],'day')>366){error.value='日期范围最多支持一年';return}
+    if(range.value[1].diff(range.value[0],'day')>366){error.value=t('ReportRepair.selectADateRangeOfUpToOneYear');return}
     const current=++sequence;loading.value=true;error.value=''
     try {
       const [statistics,organizations,charts]=await Promise.all([

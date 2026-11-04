@@ -1,3 +1,4 @@
+import i18n from '@jetlinks-web-core/locales'
 import { computed, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import type { UploadFile } from 'ant-design-vue'
@@ -6,6 +7,7 @@ import { getPublicRepairForm, submitPublicRepair, uploadPublicRepairFile, type P
 import { resolveFormOptions } from '../services/formOptions'
 import { publicSpaceTree } from '../services/publicRepair'
 import { errorMessage } from '../utils'
+const { t } = i18n.global
 
 /** 匿名表单独立于员工会话，切换二维码时清空选项与上传回执，过期/停用错误原位展示。 */
 export function usePublicRepair() {
@@ -35,7 +37,7 @@ export function usePublicRepair() {
     form.description=[form.description,text].filter(Boolean).join('\n').slice(0,800)
   }
   const upload=(file:File)=>{
-    if(files.value.length>=20||file.size>50*1024*1024){message.warning('最多20个附件，单个不超过50MB');return false}
+    if(files.value.length>=20||file.size>50*1024*1024){message.warning(t('ReportRepair.upTo20AttachmentsNoLargerThan50MB'));return false}
     const current=sequence,uid=crypto.randomUUID();files.value.push({uid,name:file.name,status:'uploading'})
     void uploadPublicRepairFile(code.value,file).then(response=>{
       if(current!==sequence)return
@@ -46,9 +48,9 @@ export function usePublicRepair() {
   const remove=(file:UploadFile)=>{files.value=files.value.filter(row=>row.uid!==file.uid);receipts.delete(file.uid);return true}
   const submit=async()=>{
     error.value=''
-    if(!form.categoryId||!form.spaceId||(formFlags.value.showReportLabel&&!form.labelIds.length)||!form.description.trim()||!form.contactName.trim()||!form.contactPhone){error.value='请填写分类、报事位置、标签、描述和联系人';return}
-    if(!/^1[3-9]\d{9}$|^(0\d{2,3}-?)?\d{7,8}$/.test(form.contactPhone)){error.value='请输入正确的联系电话';return}
-    if(files.value.some(file=>file.status!=='done')){error.value='请等待附件上传完成，或移除上传失败的附件';return}
+    if(!form.categoryId||!form.spaceId||(formFlags.value.showReportLabel&&!form.labelIds.length)||!form.description.trim()||!form.contactName.trim()||!form.contactPhone){error.value=t('ReportRepair.completeTheCategoryLocationTagsDescriptionAndContactInformation');return}
+    if(!/^1[3-9]\d{9}$|^(0\d{2,3}-?)?\d{7,8}$/.test(form.contactPhone)){error.value=t('ReportRepair.enterAValidContactPhoneNumber');return}
+    if(files.value.some(file=>file.status!=='done')){error.value=t('ReportRepair.waitForAttachmentsToFinishUploadingOrRemoveFailed');return}
     saving.value=true;const current=sequence
     try{const response=await submitPublicRepair(code.value,{...form,uploadIds:files.value.map(row=>receipts.get(row.uid)!).filter(Boolean)});if(current===sequence)number.value=response.number}
     catch(e){if(current===sequence)error.value=errorMessage(e)}finally{if(current===sequence)saving.value=false}

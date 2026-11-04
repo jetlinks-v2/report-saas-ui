@@ -1,3 +1,4 @@
+import i18n from '@jetlinks-web-core/locales'
 import { computed, reactive, ref, watch, nextTick, type Ref } from 'vue'
 import { message } from 'ant-design-vue'
 import * as api from '../api'
@@ -5,6 +6,7 @@ import type { Configuration, DeviceOption, Order, OrderInput, SharedRecord } fro
 import { errorMessage, result } from '../utils'
 import { resolveFormOptions } from '../services/formOptions'
 import { categoryTree, spaceTree, intakeError, flattenSpaces } from '../services/intake'
+const { t } = i18n.global
 
 /** 发起页联动：项目→三级分类→标签→描述；过期请求不得覆盖当前项目选项。 */
 export function useRepairIntake(error: Ref<string>, onCreated: (order: Order) => Promise<void>) {
@@ -38,7 +40,7 @@ export function useRepairIntake(error: Ref<string>, onCreated: (order: Order) =>
   const labels = computed(() => configurations.value.filter(row => row.kind === 'label' && row.parentId === form.categoryId)
     .map(row => ({ value: row.id!, label: row.name })))
   const descriptions = computed(() => configurations.value.filter(row => row.kind === 'description' && form.labelIds.includes(row.parentId || ''))
-    .map(row => ({ value: row.id!, label: row.configuration.content || row.name, group:configurations.value.find(label=>label.id===row.parentId)?.name||'报事描述' })))
+    .map(row => ({ value: row.id!, label: row.configuration.content || row.name, group:configurations.value.find(label=>label.id===row.parentId)?.name||t('ReportRepair.issueDescription') })))
   const spaceOptions = computed(() => spaceTree(spaces.value))
   const channelOptions = computed(() => configurations.value.filter(row => row.kind === 'channel').map(row => ({ value: row.id!, label: row.name })))
   let sequence = 0
@@ -95,7 +97,7 @@ export function useRepairIntake(error: Ref<string>, onCreated: (order: Order) =>
     saving.value = true; error.value = ''
     try {
       const order = result(await api.createOrder({ ...form, contactName: form.contactName.trim() }))
-      open.value = false; await onCreated(order); message.success('报事已发起')
+      open.value = false; await onCreated(order); message.success(t('ReportRepair.issueReported'))
     } catch (e) { error.value = errorMessage(e) } finally { saving.value = false }
   }
   return { formFlags,devices,deviceEnabled,deviceOptions,deviceLoading,deviceError,searchDevices,open, saving, loading, uploading, form, path, tree, labels, descriptions, spaceOptions, channelOptions, start, submit, updateDescription }

@@ -1,26 +1,28 @@
 <template>
   <section class="repair-print-sheet">
-    <h2>报事报修工单</h2>
+    <h2>{{$t('ReportRepair.issueAndRepairOrder')}}</h2>
     <table>
       <tbody>
-        <tr><th>项目名称</th><td>{{ order.businessProjectName }}</td><th>报事时间</th><td>{{ formatTime(order.createTime) }}</td><th>报事单号</th><td>{{ order.number }}</td></tr>
-        <tr><th>房屋信息</th><td>{{ order.spaceName || '—' }}</td><th>报事人</th><td>{{ order.contactName }}</td><th>联系电话</th><td>{{ order.contactPhone }}</td></tr>
-        <tr><th>处理单位</th><td colspan="2">{{ order.businessProjectName }}</td><th>处理人员</th><td colspan="2">{{ order.assignedUserName || '—' }}</td></tr>
-        <tr><th>报事内容</th><td colspan="5">{{ order.description }}</td></tr>
-        <tr><th>派工时间</th><td colspan="2">{{ formatTime(dispatchTime) }}</td><th>完成时间</th><td colspan="2">{{ formatTime(order.finishTime) }}</td></tr>
-        <tr><th>处理结果</th><td colspan="5"><div v-for="item in completion" :key="item.id">{{ item.description }}</div></td></tr>
-        <tr><th>服务评价</th><td colspan="5">{{ evaluation?.details?.satisfactionName || '—' }}<template v-if="evaluation?.details?.satisfaction !== undefined">（{{ evaluation.details.satisfaction }}分）</template><div v-if="evaluation?.details?.evaluationLabelNames?.length">{{ evaluation.details.evaluationLabelNames.join('、') }}</div></td></tr>
-        <tr><th>评价时间</th><td colspan="5">{{ formatTime(evaluation?.createTime) }}</td></tr>
-        <tr><th>评价内容</th><td colspan="5">{{ evaluation?.description || '—' }}</td></tr>
-        <tr class="signature"><th>业主签字</th><td colspan="5"></td></tr>
+        <tr><th>{{$t('ReportRepair.projectName')}}</th><td>{{ order.businessProjectName }}</td><th>{{$t('ReportRepair.reported')}}</th><td>{{ formatTime(order.createTime) }}</td><th>{{$t('ReportRepair.printIssueNumber')}}</th><td>{{ order.number }}</td></tr>
+        <tr><th>{{$t('ReportRepair.houseInformation')}}</th><td>{{ order.spaceName || '—' }}</td><th>{{$t('ReportRepair.reportedBy')}}</th><td>{{ order.contactName }}</td><th>{{$t('ReportRepair.phone')}}</th><td>{{ order.contactPhone }}</td></tr>
+        <tr><th>{{$t('ReportRepair.serviceOrganization')}}</th><td colspan="2">{{ order.businessProjectName }}</td><th>{{$t('ReportRepair.serviceStaff')}}</th><td colspan="2">{{ order.assignedUserName || '—' }}</td></tr>
+        <tr><th>{{$t('ReportRepair.issueContent')}}</th><td colspan="5">{{ order.description }}</td></tr>
+        <tr><th>{{$t('ReportRepair.assigned')}}</th><td colspan="2">{{ formatTime(dispatchTime) }}</td><th>{{$t('ReportRepair.completed')}}</th><td colspan="2">{{ formatTime(order.finishTime) }}</td></tr>
+        <tr><th>{{$t('ReportRepair.handlingResult')}}</th><td colspan="5"><div v-for="item in completion" :key="item.id">{{ item.description }}</div></td></tr>
+        <tr><th>{{$t('ReportRepair.serviceRating')}}</th><td colspan="5">{{ evaluation?.details?.satisfactionName || '—' }}<template v-if="evaluation?.details?.satisfaction !== undefined">{{$t('ReportRepair.scoreOnly', {score:evaluation.details.satisfaction})}}</template><div v-if="evaluation?.details?.evaluationLabelNames?.length">{{ evaluation.details.evaluationLabelNames.join('、') }}</div></td></tr>
+        <tr><th>{{$t('ReportRepair.rated')}}</th><td colspan="5">{{ formatTime(evaluation?.createTime) }}</td></tr>
+        <tr><th>{{$t('ReportRepair.ratingComments')}}</th><td colspan="5">{{ evaluation?.description || '—' }}</td></tr>
+        <tr class="signature"><th>{{$t('ReportRepair.ownerSignature')}}</th><td colspan="5"></td></tr>
       </tbody>
     </table>
   </section>
 </template>
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { computed } from 'vue'
 import type { Order, Process, Review } from '../types'
 import { formatTime } from '../utils'
+const { t: $t } = useI18n()
 const props = defineProps<{ order: Order; history: Process[]; reviews: Review[] }>()
 const dispatchTime = computed(() => props.history.find(row => ['dispatch', 'transfer', 'grab'].includes(row.action))?.createTime)
 const evaluation = computed(() => props.history.find(row => row.action === 'evaluate'))

@@ -60,3 +60,7 @@ docker compose -f compose.yml up -d --build
 二维码配置位于既有配置目录，通过模板绑定 `repair/Configuration`；公开入口 `/#/public/repair/:code` 显式跳过菜单获取。空间范围按Cloud空间树配置节点及下级，公开表单仅显示二维码允许范围。新增菜单须同时加入订阅套餐并刷新目标项目订阅快照，仅修改模板和角色会导致租户菜单交集过滤及404。
 
 报事等级页复用既有菜单入口，内部分派到`Configuration/Levels.vue`及`useLevelConfiguration`，采用旧版列表、内联表单和流程预览。其他配置由`Configuration/General.vue`呈现，保存统一校验已注册的Form字段。抽佣无单独名称，每项目一份、六项比例分别填写并展示，新增值留空、输入两位小数；既有存储精度保留。
+
+## 中英文切换
+
+PC 报事报修沿用主工程 `vue-i18n` 与 `locales/lang/zh.json`、`en.json` 的自动加载机制，页面、处理表单、配置、统计、导出、打印及匿名二维码表单的固定文案统一放在 `ReportRepair` 命名空间。右上角切换语言会按主工程既有行为刷新页面；日期也随当前语言显示。菜单与按钮的中英文元数据同步保存在后端 `deploy/repair/menus.json` 和 `template-grant.json`；旧环境保留的中文 `i18nName` 由语言包中的兼容入口解析。系统管理继续使用已有 `ReportSystem` 资源。用户录入的分类、项目、描述等业务数据保留原文，回访方式/结果提交值及后台渠道匹配不随语言改变。员工 H5 是独立应用，不属于 PC 右上角语言开关的范围。

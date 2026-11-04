@@ -1,9 +1,11 @@
+import i18n from '@jetlinks-web-core/locales'
 import { reactive, ref } from 'vue'
 import type { FormInstance } from 'ant-design-vue'
 import { message } from 'ant-design-vue'
 import { deleteConfiguration, queryConfigurations, saveConfiguration } from '../api'
 import type { Configuration } from '../types'
 import { errorMessage, result } from '../utils'
+const { t } = i18n.global
 
 /** 标签详情独立分页与编辑，打开或关闭抽屉不替换主标签列表及其筛选。 */
 export function useDescriptionConfiguration() {
@@ -31,7 +33,7 @@ export function useDescriptionConfiguration() {
   const save=async()=>{
     try{await formRef.value?.validate()}catch{return}
     saving.value=true;error.value=''
-    try{result(await saveConfiguration({...form,name:(form.configuration.content||'').slice(0,128)}));editing.value=false;await load();message.success('已保存')}
+    try{result(await saveConfiguration({...form,name:(form.configuration.content||'').slice(0,128)}));editing.value=false;await load();message.success(t('ReportRepair.saved'))}
     catch(e){error.value=errorMessage(e)}finally{saving.value=false}
   }
   const toggle=async(row:Configuration)=>{

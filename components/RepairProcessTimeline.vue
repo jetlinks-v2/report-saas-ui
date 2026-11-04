@@ -4,14 +4,14 @@
       <div>{{formatTime(item.createTime)}} · {{item.actorName}} · {{actionNames[item.action]||item.action}}</div>
       <div style="white-space:pre-wrap">{{item.description}}</div>
       <template v-if="item.details">
-        <div v-if="item.details.reason">原因：{{item.details.reason}}</div>
-        <div v-if="item.details.reply">回复语：{{item.details.reply}}</div>
-        <div v-if="item.details.delayUntil">申请延期至：{{formatTime(item.details.delayUntil)}}</div>
-        <div v-if="item.details.callbackMethod">回访方式：{{item.details.callbackMethod}}；结果：{{item.details.callbackResult}}；回访人：{{item.details.callbackPerson}}；时间：{{formatTime(item.details.callbackTime)}}</div>
-        <div v-if="item.details.satisfaction!==undefined">满意度：{{item.details.satisfactionName||''}}（{{item.details.satisfaction}}分）</div>
-        <div v-if="item.details.evaluationLabelNames?.length">评价标签：{{item.details.evaluationLabelNames.join('、')}}</div>
-        <div v-if="item.details.ownerName">业主：{{item.details.ownerName}}；联系方式：{{item.details.ownerPhone}}；登记人：{{item.actorName}}</div>
-        <div v-if="item.action==='quote'">材料费：{{item.details.materialAmount}} 元；人工费：{{item.details.artificialAmount}} 元</div>
+        <div v-if="item.details.reason">{{$t('ReportRepair.reason')}}{{item.details.reason}}</div>
+        <div v-if="item.details.reply">{{$t('ReportRepair.replyPrefix')}}{{item.details.reply}}</div>
+        <div v-if="item.details.delayUntil">{{$t('ReportRepair.requestedExtensionTo')}}{{formatTime(item.details.delayUntil)}}</div>
+        <div v-if="item.details.callbackMethod">{{$t('ReportRepair.callbackHistory', {method:callbackMethodNames[item.details.callbackMethod]||item.details.callbackMethod,result:callbackResultNames[item.details.callbackResult||'']||item.details.callbackResult||'—',person:item.details.callbackPerson||'—',time:formatTime(item.details.callbackTime)})}}</div>
+        <div v-if="item.details.satisfaction!==undefined">{{$t('ReportRepair.satisfactionHistory', {name:item.details.satisfactionName||'',score:item.details.satisfaction})}}</div>
+        <div v-if="item.details.evaluationLabelNames?.length">{{$t('ReportRepair.ratingTags363')}}{{item.details.evaluationLabelNames.join('、')}}</div>
+        <div v-if="item.details.ownerName">{{$t('ReportRepair.ownerHistory', {name:item.details.ownerName,phone:item.details.ownerPhone||'—',recorder:item.actorName})}}</div>
+        <div v-if="item.action==='quote'">{{$t('ReportRepair.costHistory', {material:item.details.materialAmount,labor:item.details.artificialAmount})}}</div>
         <RepairAttachments v-if="item.details.signatureFileId" :value="[item.details.signatureFileId]" disabled />
       </template>
       <RepairAttachments v-if="item.attachmentIds?.length" :value="item.attachmentIds" disabled />
@@ -19,8 +19,11 @@
   </a-timeline>
 </template>
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+import { callbackMethodNames, callbackResultNames } from '../services/actions'
 import type { Process } from '../types'
 import { actionNames, formatTime } from '../utils'
 import RepairAttachments from './RepairAttachments.vue'
+const { t: $t } = useI18n()
 defineProps<{records:Process[]}>()
 </script>

@@ -1,3 +1,4 @@
+import i18n from '@jetlinks-web-core/locales'
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { useBusinessApplicationStore } from '@jetlinks-web-core/store'
 import { configurationPages, configurationNameLabel, initialConfiguration, initialFlowConfiguration } from '../services/configuration'
@@ -14,6 +15,7 @@ import { useDescriptionConfiguration } from './useDescriptionConfiguration'
 import { useRepairFormOptions } from './useRepairFormOptions'
 import { useQrConfiguration } from './useQrConfiguration'
 import { useRepairPermissions } from './useRepairPermissions'
+const { t } = i18n.global
 /** 配置按业务项目独立维护，编辑不允许把既有配置移动到另一业务项目。 */
 export function useConfiguration() {
   const { loadPermissions, can } = useRepairPermissions()
@@ -22,7 +24,7 @@ export function useConfiguration() {
   const activeTab=ref('configuration'),filterTerms=ref<ConditionTerm[]>([])
   const filterFields=computed(()=>isFlow.value?flowFilterFields(related.value):configurationFilterFields(kind.value,related.value))
   const roleName=(row:Configuration,key:Parameters<typeof flowRoleName>[1])=>flowRoleName(row,key,roleOptions.value)
-  const page = computed(() => configurationPages[route.path.split('/').pop() || ''] || {kind:'channel',title:'报事渠道配置'})
+  const page = computed(() => configurationPages[route.path.split('/').pop() || ''] || {kind:'channel',title:t('ReportRepair.reportingChannelConfiguration')})
   const kind = computed(() => page.value.kind)
   const isFlow = computed(() => route.path.split('/').pop() === 'theBusinessProcess')
   const flowEditing = ref(false), flowSourceId=ref<string>(), flowSourceModifyTime=ref<number>()
@@ -42,9 +44,9 @@ export function useConfiguration() {
   const parentTree=computed(()=>configurationParentTree(related.value,form))
   const satisfactionOptions = computed(() => {
     const options=related.value.filter(row=>row.kind==='satisfaction'&&row.businessProjectId===form.businessProjectId&&(row.enabled||row.id===form.configuration.satisfactionId))
-      .sort((a,b)=>(a.configuration.score||0)-(b.configuration.score||0)).map(row=>({value:row.id!,label:`${row.name}（${row.configuration.score}分）${row.enabled?'':'（停用）'}`}))
+      .sort((a,b)=>(a.configuration.score||0)-(b.configuration.score||0)).map(row=>({value:row.id!,label:t('ReportRepair.ratingStatusLabel', { p0: row.name, p1: row.configuration.score, p2: row.enabled?'':t('ReportRepair.disabledSuffix') })}))
     const original=form.configuration.satisfactionId
-    if(form.id&&original&&!options.some(row=>row.value===original))options.push({value:original,label:'原级别已删除或不可访问'})
+    if(form.id&&original&&!options.some(row=>row.value===original))options.push({value:original,label:t('ReportRepair.theOriginalRatingWasDeletedOrIsInaccessible')})
     return options
   })
   const leafCategory=computed(()=>actualKind.value==='category'&&!!form.parentId&&categoryPath(related.value,form.parentId).length===2)
@@ -52,7 +54,7 @@ export function useConfiguration() {
   const rows = ref<Configuration[]>([]), projects = ref<SharedRecord[]>([])
   const businessProjectId = ref<string>()
   const projectOptions = computed(() => projects.value.map(row => ({ value: row.id, label: displayName(row) })))
-  const projectName = (id: string) => projectOptions.value.find(option => option.value === id)?.label || '项目不可访问'
+  const projectName = (id: string) => projectOptions.value.find(option => option.value === id)?.label || t('ReportRepair.projectInaccessible')
   const loading = ref(false), saving = ref(false), error = ref(''), open = ref(false)
   const total = ref(0), current = ref(1)
   const form = reactive<Configuration>({ businessProjectId: '', kind: 'channel', name: '', enabled: true, configuration: {} })
@@ -100,8 +102,8 @@ export function useConfiguration() {
     if(actualKind.value==='commission'&&!form.businessProjectId)form.businessProjectId=projectOptions.value[0]?.value||''
     if(isFlow.value){
       if(!row)form.configuration={...initialFlowConfiguration(),
-        closeRoleId:roleOptions.value.find(role=>role.label==='非关审核员')?.value,
-        delayRoleId:roleOptions.value.find(role=>role.label==='延期审核员')?.value}
+        closeRoleId:roleOptions.value.find(role=>role.label===t('ReportRepair.abnormalClosureReviewer'))?.value,
+        delayRoleId:roleOptions.value.find(role=>role.label===t('ReportRepair.extensionReviewer'))?.value}
       form.configuration.flowEnabled ??= true
     }
     open.value = true
@@ -112,16 +114,16 @@ export function useConfiguration() {
     if(actualKind.value==='commission')form.name=projectName(form.businessProjectId)
     try{await configurationFormRef.value?.validate()}catch{return}
     if(isFlow.value) {
-      if(!form.id){message.warning('请选择尚未配置流程的报事分类');return}
+      if(!form.id){message.warning(t('ReportRepair.selectAnIssueCategoryWithoutAWorkflow'));return}
       form.configuration.flowRoleNames=flowRoleNames(form,roleOptions.value)
       form.configuration.flowConfigured=true
       form.configuration.flowEnabled ??= true
     }
-    if (!form.businessProjectId || !form.name.trim()) { message.warning('请选择业务项目并填写名称'); return }
+    if (!form.businessProjectId || !form.name.trim()) { message.warning(t('ReportRepair.selectAProjectAndEnterAName')); return }
     saving.value = true; error.value = ''
     try { result(await (isFlow.value&&flowSourceId.value&&form.id!==flowSourceId.value
       ?moveFlowConfiguration(flowSourceId.value,form.id!,{sourceModifyTime:flowSourceModifyTime.value!,configuration:form.configuration})
-      :saveConfiguration(form))); open.value = false; await load(); message.success('已保存') }
+      :saveConfiguration(form))); open.value = false; await load(); message.success(t('ReportRepair.saved')) }
     catch (e) { error.value = errorMessage(e) } finally { saving.value = false }
   }
   const search=()=>{const q=encodeConditionFilterQuery(filterTerms.value,filterFields.value)||undefined;if(q!==route.query.q)void router.replace({query:{...route.query,q}})}
@@ -133,14 +135,14 @@ export function useConfiguration() {
     saving.value=true;error.value=''
     try {
       const input=isFlow.value?{...row,configuration:{...row.configuration,flowEnabled:!flowEnabled(row)}}:{...row,enabled:!row.enabled}
-      result(await saveConfiguration(input));await load();message.success((isFlow.value?flowEnabled(row):row.enabled)?'已停用':'已启用')
+      result(await saveConfiguration(input));await load();message.success((isFlow.value?flowEnabled(row):row.enabled)?t('ReportRepair.statusDisabled'):t('ReportRepair.statusEnabled'))
     }
     catch(e){error.value=errorMessage(e)}finally{saving.value=false}
   }
   const remove = async (row:Configuration) => {
     if(!row.id)return
     saving.value=true;error.value=''
-    try {result(await (isFlow.value?deleteFlowConfiguration(row.id):deleteConfiguration(row.id)));await load();message.success('已删除')}
+    try {result(await (isFlow.value?deleteFlowConfiguration(row.id):deleteConfiguration(row.id)));await load();message.success(t('ReportRepair.deleted'))}
     catch(e){error.value=errorMessage(e)}finally{saving.value=false}
   }
   const categoryTreeState=computed(()=>{

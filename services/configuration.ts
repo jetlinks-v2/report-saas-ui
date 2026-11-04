@@ -1,13 +1,15 @@
+import i18n from '@jetlinks-web-core/locales'
 import type { ConfigurationData } from '../types'
+const { t } = i18n.global
 export const configurationPages: Record<string, {kind:string; title:string}> = {
-  reportRepairQrConfig:{kind:'qr',title:'报事二维码配置'},
-  reportLevel:{kind:'level',title:'报事等级配置'}, theMatterClassification:{kind:'category',title:'报事分类配置'},
-  labelSet:{kind:'label',title:'标签配置'}, theBusinessProcess:{kind:'category',title:'报事流程配置'},
-  satisfaction:{kind:'satisfaction',title:'满意度配置'}, evaluationOfTheLabel:{kind:'evaluationLabel',title:'评价标签设置'},
-  replyLanguageSetting:{kind:'reply',title:'回复语设置'}, reportCommissionSetting:{kind:'commission',title:'有偿报事抽佣配置'}
+  reportRepairQrConfig:{kind:'qr',title:t('ReportRepair.issueQRCodeConfiguration')},
+  reportLevel:{kind:'level',title:t('ReportRepair.issuePriorityConfiguration')}, theMatterClassification:{kind:'category',title:t('ReportRepair.issueCategoryConfiguration')},
+  labelSet:{kind:'label',title:t('ReportRepair.tagConfiguration')}, theBusinessProcess:{kind:'category',title:t('ReportRepair.workflowConfiguration')},
+  satisfaction:{kind:'satisfaction',title:t('ReportRepair.satisfactionConfiguration')}, evaluationOfTheLabel:{kind:'evaluationLabel',title:t('ReportRepair.ratingTagSettings')},
+  replyLanguageSetting:{kind:'reply',title:t('ReportRepair.replySettings')}, reportCommissionSetting:{kind:'commission',title:t('ReportRepair.paidServiceCommissionConfiguration')}
 }
 export const initialConfiguration = (kind: string): ConfigurationData => kind === 'qr'
-  ? {code:'',welcomeText:'欢迎提交报事报修，我们将及时为您处理。',categoryIds:[],spaceRootIds:[],publicAreaRootIds:[],enableRoom:true,enableCampus:false,campusOptions:[]}
+  ? {code:'',welcomeText:t('ReportRepair.welcomeSubmitYourIssueOrRepairRequestAndWe'),categoryIds:[],spaceRootIds:[],publicAreaRootIds:[],enableRoom:true,enableCampus:false,campusOptions:[]}
   : kind === 'category'
   ? { flowConfigured:false, flowEnabled:true }
   : kind === 'level' ? {coefficient:1,color:'#E5484D',auditRequired:false,thirdParty:false}
@@ -19,14 +21,14 @@ export async function validateCommissionTotal(data: ConfigurationData, group: 'm
   const values = [rates?.property, rates?.provider, rates?.person]
   if (values.some(value => typeof value !== 'number')) return
   if (values.reduce<number>((sum,value) => sum + value!, 0) > 100) {
-    throw new Error('三方抽佣比例合计不能超过100%')
+    throw new Error(t('ReportRepair.theCombinedCommissionRatesMustNotExceed100'))
   }
 }
 
 /** 原流程新增表单的次数/时限待填写，默认需要回访；分类保存不预先创建流程参数。 */
 export const initialFlowConfiguration = ():ConfigurationData => ({flowConfigured:true,flowEnabled:true,callbackRequired:true,autoDispatchEnable:false})
 
-export const commissionGroups = [{key:"materialVo",label:"材料费"},{key:"artificialVo",label:"人工费"}] as const
-export const commissionRecipients = [{key:"property",label:"物业"},{key:"provider",label:"供方"},{key:"person",label:"责任人"}] as const
+export const commissionGroups = [{key:"materialVo",label:t('ReportRepair.materialCost')},{key:"artificialVo",label:t('ReportRepair.laborCost')}] as const
+export const commissionRecipients = [{key:"property",label:t('ReportRepair.property')},{key:"provider",label:t('ReportRepair.provider')},{key:"person",label:t('ReportRepair.assignee')}] as const
 
-export const configurationNameLabel=(kind:string):string=>({channel:'渠道名称',category:'分类名称',label:'标签名称',satisfaction:'级别',evaluationLabel:'标签名称',reply:'回复语内容',description:'报事描述'} as Record<string,string>)[kind]||'名称'
+export const configurationNameLabel=(kind:string):string=>({channel:t('ReportRepair.channelName'),category:t('ReportRepair.categoryName'),label:t('ReportRepair.tagName'),satisfaction:t('ReportRepair.rating'),evaluationLabel:t('ReportRepair.tagName'),reply:t('ReportRepair.replyContent'),description:t('ReportRepair.issueDescription')} as Record<string,string>)[kind]||t('ReportRepair.name')
