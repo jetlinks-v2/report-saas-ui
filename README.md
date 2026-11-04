@@ -22,7 +22,7 @@ pnpm exec vue-tsc --noEmit -p modules/report-repair-ui/tsconfig.json
 
 `index.ts` 和独立构建的 `register.ts` 使用同一注册入口，包含应用页面、匿名二维码路由与工单提示音扩展。PC 类型检查排除独立 H5，H5 按自己的依赖和 tsconfig 验证。主工程工作区配置同样排除 H5 包，避免两套 Vue 依赖混用。
 
-后端为 `jetlinks-v2/property-management` 的 `2.20`，独立报修服务通过网关提供 `/repair/**` 与 `/property-data/**`。菜单模板位于后端 `deploy/repair`，新环境需配置应用模板、订阅快照与角色授权。
+后端为 `jetlinks-v2/property-management` 的 `2.20`，独立报修服务通过网关提供 `/repair/**`，基础服务提供 `/property/**`。两个服务须同时启动；项目、用户身份和空间绑定以基础模块为准，PC 与 H5 共用。菜单模板位于后端 `deploy/repair`，新环境需配置应用模板、订阅快照与角色授权。
 
 ## 员工 H5
 
@@ -37,13 +37,13 @@ docker compose -f compose.yml up -d --build
 
 ## 模块能力
 
-通过应用模板菜单的 `options.meta.componentCode` 注册页面：`repair/Orders` 工单处置、`repair/Overview` 状态概览、`repair/Configuration` 渠道/分类/等级等配置（按既有菜单路径选择页面）、`repair/SharedData` 公共资料同步及扩展、`repair/Reports` 报表和评价查询、`repair/Exports` 导出记录。菜单 ID、原有 URL 与四个一级目录保持不变。
+通过应用模板菜单的 `options.meta.componentCode` 注册页面：`repair/Orders` 工单处置、`repair/Overview` 状态概览、`repair/Configuration` 渠道/分类/等级等配置（按既有菜单路径选择页面）、`repair/Reports` 报表和评价查询、`repair/Exports` 导出记录。系统管理在本模块独立实现，五个页面位于 `views/system-management`，使用 `baseMenu.json` 中的 `system-management/*` 组件编码及 `/repair/system/*` 路由。既有报修菜单 ID 和 URL 保持不变，旧公共资料菜单应隐藏。新增菜单需要同步到应用模板、服务套餐、项目订阅和角色，保留原资产授权。
 
-页面使用现有应用访问上下文与公共上传组件；服务端执行租户、应用、资产和动作权限。工单列表分页，详情使用抽屉查看及执行动作，处理过程使用时间线。公共资料来自 Cloud，共享修改通过 property-data 接口进行。
+页面使用现有应用访问上下文与公共上传组件；服务端执行租户、应用、资产和动作权限。工单列表分页，详情使用抽屉查看及执行动作，处理过程使用时间线。基础资料从 Cloud 同步到基础模块，系统管理通过 `/property/**` 维护组织类型、用户身份、空间绑定与档案。
 
 当前页面已接入延期/废弃/非正常关单与等级审核、转派/抢单、回访、双侧评价、签字、有偿费用和报表导出。业主评价/签字由员工后台代登记，业主信息与登记员工分开显示。Cloud 站内通知已接入原生消息中心；匿名二维码配置与公开表单、受限上传和提交已接通。其他通知渠道、业主本人入口和查验联动仍按约定边界处理；设备与第三方开放接口本轮暂不接入；不能把菜单预览作为已迁移的业务能力。工程构建、API 和浏览器验收由后端项目与本地验证记录统一说明。
 
-模块包含独立构建需要的 `register.ts` 与 `baseMenu.json`。菜单授权由现有应用模板维护，`baseMenu.json` 保持空数组，避免构建时重复导入菜单。配置按业务项目筛选；切换发起项目时清空已选分类、渠道和空间。派单选项从后端目标工单的候选人接口读取，不以员工目录直接作为维修员列表。模块可独立构建；全工作区类型检查仍可能报告既有共享核心及依赖错误。
+模块包含独立构建需要的 `register.ts`、`baseMenu.ts` 与 `baseMenu.json`。`baseMenu.json` 提供系统管理菜单定义，既有报修菜单继续使用后端部署模板；实际授权统一由应用模板、服务套餐与角色维护。配置按业务项目筛选；切换发起项目时清空已选分类、渠道和空间。派单选项从后端目标工单的候选人接口读取，不以员工目录直接作为维修员列表。模块可独立构建；全工作区类型检查仍可能报告既有共享核心及依赖错误。
 
 新增页面目录后应重启9200的Vite开发进程，使import.meta.glob收集新路由。角色待接单池允许具备接单权限的候选人在详情中发起接单；实际角色及资产资格由后端实时判定。
 

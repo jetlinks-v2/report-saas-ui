@@ -2,7 +2,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { buildQueryFilter, encodeConditionFilterQuery, decodeConditionFilterQuery, type ConditionTerm } from '@jetlinks-web-core/components/ConditionFilter'
 import { message } from 'ant-design-vue'
-import { createExport, queryOrders, queryOrganizations, queryStatistics } from '../api'
+import { createExport, queryOrders, queryProjects, queryStatistics } from '../api'
 import type { ExportType, Order, Query, ReportRow, SelectOption } from '../types'
 import { displayName, errorMessage, result } from '../utils'
 import { reportColumns, reportFields, reportPages, orderFilterFields, canDrillReport, reportOrderQuery } from '../services/reports'
@@ -39,6 +39,6 @@ export function useReports(){
  }catch(e){error.value=errorMessage(e)}finally{exporting.value=false}}
  let ready=false
  watch(()=>[route.path,route.query.q],([path,q],[oldPath])=>{if(ready&&(path!==oldPath||encodeConditionFilterQuery(terms.value,fields.value)!==(q||''))){terms.value=decodeConditionFilterQuery(q,fields.value);current.value=1;rows.value=[];orders.value=[];void load()}})
- onMounted(async()=>{try{await loadPermissions();projects.value=result(await queryOrganizations({pageSize:200,terms:[{column:'businessProject',value:true}]})).data.map(row=>({value:row.id,label:displayName(row)}));terms.value=decodeConditionFilterQuery(route.query.q,fields.value);ready=true;await load()}catch(e){error.value=errorMessage(e)}})
+ onMounted(async()=>{try{await loadPermissions();projects.value=result(await queryProjects()).map(row=>({value:row.id,label:displayName(row)}));terms.value=decodeConditionFilterQuery(route.query.q,fields.value);ready=true;await load()}catch(e){error.value=errorMessage(e)}})
  return {terms,page,columns,fields,rows,orders,total,current,loading,exporting,error,canExport,canDrill,drill,load,search,pageChange,exportData,exportOpen,exportScope,startExport}
 }

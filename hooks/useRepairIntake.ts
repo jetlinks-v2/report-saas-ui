@@ -4,7 +4,7 @@ import * as api from '../api'
 import type { Configuration, DeviceOption, Order, OrderInput, SharedRecord } from '../types'
 import { errorMessage, result } from '../utils'
 import { resolveFormOptions } from '../services/formOptions'
-import { categoryTree, spaceTree, intakeError } from '../services/intake'
+import { categoryTree, spaceTree, intakeError, flattenSpaces } from '../services/intake'
 
 /** 发起页联动：项目→三级分类→标签→描述；过期请求不得覆盖当前项目选项。 */
 export function useRepairIntake(error: Ref<string>, onCreated: (order: Order) => Promise<void>) {
@@ -52,10 +52,10 @@ export function useRepairIntake(error: Ref<string>, onCreated: (order: Order) =>
       const terms = [{ column: 'businessProjectId', value: id }]
       const [configs, places] = await Promise.all([
         api.queryConfigurations({ paging: false, terms: [...terms, { column: 'enabled', value: true }] }),
-        api.querySpaces({ paging: false, terms })
+        api.queryProjectSpaces(id)
       ])
       if (current !== sequence) return
-      configurations.value = result(configs).data; spaces.value = result(places).data
+      configurations.value = result(configs).data; spaces.value = flattenSpaces(result(places))
       form.channelId = configurations.value.find(row => row.kind === 'channel' && row.name.trim() === '后台报事')?.id
     } catch (e) { if (current === sequence) error.value = errorMessage(e) }
     finally { if (current === sequence) loading.value = false }

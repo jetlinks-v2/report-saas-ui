@@ -11,13 +11,9 @@ interface TypedRequest {
 }
 // 当前共享包的 request 未导出泛型签名，在 API 边界统一补齐响应类型。
 const apiRequest = request as TypedRequest
-export const syncCloudData = () => apiRequest.post<Record<string, number>>('/property-data/_sync', {})
-export const queryOrganizations = (query: Query) => apiRequest.post<Pager<SharedRecord>>('/property-data/organizations/_query', query)
-export const queryPeople = (query: Query) => apiRequest.post<Pager<SharedRecord>>('/property-data/persons/_query', query)
-export const querySpaces = (query: Query) => apiRequest.post<Pager<SharedRecord>>('/property-data/spaces/_query', query)
-export const updateOrganization = (id: string, data: object) => apiRequest.patch<SharedRecord>(`/property-data/organizations/${id}/extensions`, data)
-export const updatePerson = (id: string, data: object) => apiRequest.patch<SharedRecord>(`/property-data/persons/${id}/extensions`, data)
-export const updateSpace = (id: string, data: object) => apiRequest.patch<SharedRecord>(`/property-data/spaces/${id}/extensions`, data)
+/** 报修选项直接使用统一基础模块；绑定以根空间归属为准。 */
+export const queryProjects = () => apiRequest.get<SharedRecord[]>('/property/space/_projects')
+export const queryProjectSpaces = (projectId: string) => apiRequest.get<SharedRecord[]>('/property/space/_tree?projectId='+encodeURIComponent(projectId))
 export const queryOrders = (query: Query) => apiRequest.post<Pager<Order>>('/repair/orders/_query', query)
 export const queryOperationLogs = (query:Query) => apiRequest.post<Pager<OperationLog>>('/repair/operation-logs/_query',query)
 export const countOrders = (query: Query) => apiRequest.post<number>('/repair/orders/_count', query)

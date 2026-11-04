@@ -5,7 +5,7 @@ export interface Authorization {user:{id:string;name?:string;username?:string};p
 export interface Query {pageIndex?:number;pageSize?:number;paging?:boolean;terms?:Term[];sorts?:{name:string;order:'asc'|'desc'}[]}
 export interface Term {column?:string;termType?:string;value?:unknown;type?:'and'|'or';terms?:Term[]}
 export interface Pager<T> {data:T[];total:number;pageIndex:number;pageSize:number}
-export interface SharedRecord {id:string;sourceName?:string;displayName?:string;parentId?:string;businessProjectId?:string}
+export interface SharedRecord {id:string;name?:string;displayName?:string;parentId?:string;organizationId?:string;leaf?:boolean;children?:SharedRecord[]}
 export interface Configuration {id:string;businessProjectId:string;kind:string;name:string;parentId?:string;enabled:boolean;sortIndex?:number;configuration:Record<string,unknown>}
 export interface Order {
  id:string;number:string;title:string;description?:string;status:number;version:number;businessProjectId:string;businessProjectName:string;

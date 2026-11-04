@@ -1,6 +1,7 @@
 import { computed, ref, watch, type Ref } from 'vue'
 import { message } from 'ant-design-vue'
-import { querySpaces } from '../api'
+import { queryProjectSpaces } from '../api'
+import { flattenSpaces } from '../services/intake'
 import { categoryPath, spaceTree } from '../services/intake'
 import type { Configuration, SharedRecord } from '../types'
 import { errorMessage, result } from '../utils'
@@ -15,8 +16,8 @@ export function useQrConfiguration(form:Configuration,related:Ref<Configuration[
     if(form.kind!=='qr'||!form.businessProjectId)return
     loading.value=true
     try{
-      const response=await querySpaces({paging:false,terms:[{column:'businessProjectId',value:form.businessProjectId}]})
-      if(current===sequence)spaces.value=result(response).data
+      const response=await queryProjectSpaces(form.businessProjectId)
+      if(current===sequence)spaces.value=flattenSpaces(result(response))
     }catch(e){if(current===sequence)error.value=errorMessage(e)}finally{if(current===sequence)loading.value=false}
   })
   const projectRows=computed(()=>related.value.filter(row=>row.businessProjectId===form.businessProjectId&&row.enabled))

@@ -21,7 +21,7 @@ export function useOrders() {
   const counts=ref<Record<string,number>>()
   const exportOpen=ref(false),exportScope=ref<'all'|'current'>('all'),exporting=ref(false),exportError=ref('')
   const printOpen=ref(false),printElement=ref<HTMLElement>()
-  const projects=ref<SharedRecord[]>([]), people=ref<SharedRecord[]>([]), configurations=ref<Configuration[]>([]), spaces=ref<SharedRecord[]>([])
+  const projects=ref<SharedRecord[]>([]), people=ref<SharedRecord[]>([]), configurations=ref<Configuration[]>([])
   const reviews=ref<Review[]>([])
   const detailOpen=ref(false), actionOpen=ref(false), selected=ref<Order>(), history=ref<Process[]>([]), action=ref('')
   const actionFormRef=ref<{validate:()=>Promise<void>;clearValidate:()=>void}>()
@@ -93,8 +93,8 @@ export function useOrders() {
   }
   const loadOptions=async()=>{
     const query={pageSize:200}
-    const [org,space,auth]=await Promise.all([api.queryOrganizations({...query,terms:[{column:'businessProject',value:true}]}),api.querySpaces(query),api.getAuthorization()])
-    projects.value=result(org).data;spaces.value=result(space).data;authorization.value=result(auth)
+    const [org,auth]=await Promise.all([api.queryProjects(),api.getAuthorization()])
+    projects.value=result(org);authorization.value=result(auth)
   }
   const routeFields=computed(()=>orderFilterFields(projectOptions.value))
   const filterFields=routeFields

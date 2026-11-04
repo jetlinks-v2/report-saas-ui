@@ -1,8 +1,10 @@
 import { request } from './http'
 import type {ActionInput,Authorization,Configuration,Device,FileInfo,Order,OrderInput,Pager,Process,Query,ReportRow,Review,SharedRecord} from '../types'
 export const authorize=()=>request<Authorization>('/authorize/me')
-export const projects=()=>request<Pager<SharedRecord>>('/property-data/organizations/_query',{paging:false,terms:[{column:'businessProject',value:true}]})
-export const spaces=(id:string)=>request<Pager<SharedRecord>>('/property-data/spaces/_query',{paging:false,terms:[{column:'businessProjectId',value:id}]})
+const page = <T>(data:T[]):Pager<T> => ({data,total:data.length,pageIndex:0,pageSize:data.length})
+const flatten=(rows:SharedRecord[]):SharedRecord[]=>rows.flatMap(row=>[row,...flatten(row.children||[])])
+export const projects=()=>request<SharedRecord[]>('/property/space/_projects').then(page)
+export const spaces=(id:string)=>request<SharedRecord[]>('/property/space/_tree?projectId='+encodeURIComponent(id)).then(flatten).then(page)
 export const configurations=(id:string)=>request<Pager<Configuration>>('/repair/configurations/_query',{paging:false,terms:[{column:'businessProjectId',value:id},{column:'enabled',value:true}]})
 export const orders=(query:Query)=>request<Pager<Order>>('/repair/orders/_query',query)
 export const count=(query:Query)=>request<number>('/repair/orders/_count',query)

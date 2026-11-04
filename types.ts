@@ -1,7 +1,7 @@
 export interface Query { paging?: boolean; pageIndex?: number; pageSize?: number; terms?: object[]; sorts?: object[] }
 export interface OperationLog { id:string; operatorId?:string; operatorName?:string; operation?:string; action?:string; httpMethod?:string; url?:string; status:number; errorType?:string; createTime:number; duration:number }
 export interface Pager<T> { data: T[]; total: number; pageIndex: number; pageSize: number }
-export interface SharedRecord { id: string; sourceName?: string; displayName?: string; parentId?: string; businessProject?: boolean; employee?: boolean; owner?: boolean; businessProjectId?: string; sourceStatus?: number }
+export interface SharedRecord { id: string; name?: string; displayName?: string; parentId?: string; organizationId?: string; rootId?: string; leaf?: boolean; children?: SharedRecord[] }
 export type RepairFormOptions = Record<'showReportPosition'|'showReportDetailLocation'|'showReportLabel'|'showReportDescriptionChoice'|'showReportUrgency'|'showProblemDescription'|'showMediaUpload',boolean>
 export interface ConfigurationData extends Partial<RepairFormOptions> {
   code?:string; channelId?:string; welcomeText?:string; categoryIds?:string[]; spaceRootIds?:string[]

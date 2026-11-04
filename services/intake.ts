@@ -36,7 +36,10 @@ export function spaceTree(rows:SharedRecord[]):CategoryOption[] {
     .filter(row=>!ancestors.has(row.id))
     .map(row=>{
       const children=build(row.id,new Set([...ancestors,row.id]))
-      return {value:row.id,label:row.displayName||row.sourceName||row.id,...(children.length?{children}:{})}
+      return {value:row.id,label:row.name||row.id,...(children.length?{children}:{})}
     })
   return build()
 }
+
+/** 基础接口返回树，表单仅展开有权访问的节点。 */
+export const flattenSpaces = (rows: SharedRecord[]): SharedRecord[] => rows.flatMap(row => [row, ...flattenSpaces(row.children || [])])

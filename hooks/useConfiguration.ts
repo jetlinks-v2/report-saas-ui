@@ -6,7 +6,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { buildQueryFilter, decodeConditionFilterQuery, encodeConditionFilterQuery, type ConditionTerm } from '@jetlinks-web-core/components/ConditionFilter'
 import { flowCategoryTree, flowConfigured, flowDraft, flowFilterFields, flowFilterTerms, flowRoleName, flowRoleNames } from '../services/configurationFlow'
 import { message, type FormInstance } from 'ant-design-vue'
-import { queryConfigurations, queryOrganizations, saveConfiguration, deleteConfiguration, deleteFlowConfiguration, moveFlowConfiguration, queryApplicationRoles } from '../api'
+import { queryConfigurations, queryProjects, saveConfiguration, deleteConfiguration, deleteFlowConfiguration, moveFlowConfiguration, queryApplicationRoles } from '../api'
 import type { Configuration, SharedRecord, SelectOption } from '../types'
 import { displayName, errorMessage, result } from '../utils'
 import { configurationFilterFields, configurationFilterTerms, configurationTree, configurationParentTree } from '../services/configurationSearch'
@@ -165,7 +165,7 @@ export function useConfiguration() {
   onMounted(async () => {
     try {
       await loadPermissions()
-      projects.value = result(await queryOrganizations({ pageSize: 200, terms: [{ column: 'businessProject', value: true }] })).data
+      projects.value = result(await queryProjects())
       const applicationId=useBusinessApplicationStore().currentApplication?.id
       if(applicationId){try{roleOptions.value=result(await queryApplicationRoles(applicationId)).data.map(row=>({value:row.id,label:row.name}))}catch{/* 角色查询权限独立；不阻断字典读取。 */}}
       filterTerms.value=decodeConditionFilterQuery(route.query.q,filterFields.value)

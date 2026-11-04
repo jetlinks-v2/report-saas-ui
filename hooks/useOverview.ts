@@ -4,7 +4,7 @@ import { encodeConditionFilterQuery } from '@jetlinks-web-core/components/Condit
 import { orderFilterFields } from '../services/reports'
 import dayjs, { type Dayjs } from 'dayjs'
 import type { EChartsCoreOption } from 'echarts/core'
-import { queryDashboard, queryStatistics, queryOrganizations } from '../api'
+import { queryDashboard, queryStatistics, queryProjects } from '../api'
 import type { Dashboard, ReportRow } from '../types'
 import { errorMessage, result, statusNames } from '../utils'
 
@@ -54,11 +54,11 @@ export function useOverview() {
     const current=++sequence;loading.value=true;error.value=''
     try {
       const [statistics,organizations,charts]=await Promise.all([
-        queryStatistics({}),queryOrganizations({pageSize:1,terms:[{column:'businessProject',value:true}]}),
+        queryStatistics({}),queryProjects(),
         queryDashboard({terms:[{column:'createTime',termType:'btw',value:[range.value[0].startOf('day').valueOf(),range.value[1].endOf('day').valueOf()]}]},interval.value)
       ])
       if(current!==sequence)return
-      summary.value=result(statistics);projectTotal.value=result(organizations).total;dashboard.value=result(charts)
+      summary.value=result(statistics);projectTotal.value=result(organizations).length;dashboard.value=result(charts)
       if((projectPagination.current-1)*projectPagination.pageSize>=projects.value.length)projectPagination.current=1
     }catch(e){if(current===sequence)error.value=errorMessage(e)}finally{if(current===sequence)loading.value=false}
   }

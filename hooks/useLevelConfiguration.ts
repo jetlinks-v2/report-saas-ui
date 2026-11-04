@@ -1,7 +1,7 @@
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { message, type FormInstance } from 'ant-design-vue'
 import { useBusinessApplicationStore } from '@jetlinks-web-core/store'
-import { queryApplicationRoles, queryConfigurations, queryOrganizations, saveConfiguration, deleteConfiguration } from '../api'
+import { queryApplicationRoles, queryConfigurations, queryProjects, saveConfiguration, deleteConfiguration } from '../api'
 import type { Configuration, SelectOption } from '../types'
 import { initialConfiguration } from '../services/configuration'
 import { displayName, errorMessage, result } from '../utils'
@@ -69,7 +69,7 @@ export function useLevelConfiguration() {
   onMounted(async () => {
     try {
       await loadPermissions()
-      projectOptions.value = result(await queryOrganizations({ paging: false, terms: [{ column: 'businessProject', value: true }] })).data
+      projectOptions.value = result(await queryProjects())
         .map(row => ({ value: row.id, label: displayName(row) }))
       const applicationId = useBusinessApplicationStore().currentApplication?.id
       if (applicationId) {
