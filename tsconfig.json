@@ -1,0 +1,26 @@
+{
+  "extends": "../../jetlinks-web-core/tsconfig.json",
+  "compilerOptions": {
+    "moduleResolution": "Bundler",
+    "types": [
+      "node",
+      "vite/client"
+    ],
+    "typeRoots": [
+      "../../jetlinks-web-core/node_modules/@types",
+      "../../node_modules/@types",
+      "../../node_modules"
+    ]
+  },
+  "include": [
+    "./**/*.ts",
+    "./**/*.vue",
+    "../../jetlinks-web-core/src/env.d.ts",
+    "../../jetlinks-web-core/src/auto-imports.d.ts"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "employee-h5"
+  ]
+}
