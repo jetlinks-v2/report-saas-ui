@@ -33,7 +33,7 @@ npm run build
 docker compose -f compose.yml up -d --build
 ```
 
-电脑入口为 `http://localhost:9300/`；手机连接同一局域网后，使用电脑局域网 IP 加 `:9300`。H5 的 `/api` 经 Nginx 转发到同一 Cloud 网关，浏览器无需直连物业服务 8503，也无需跨域。开发模式可在本目录执行 `npm run dev`，代理配置见 `vite.config.ts`。
+电脑入口为 `http://localhost:9300/`；手机连接同一局域网后，使用电脑局域网 IP 加 `:9300`。H5 的 `/api` 经 Nginx 转发到同一 Cloud 网关，浏览器无需直连报修服务 8506，也无需跨域。开发模式可在本目录执行 `npm run dev`，代理配置见 `vite.config.ts`。
 
 运行配置为 `public/config.json`，以只读文件挂载进容器，更新后刷新页面即可：
 

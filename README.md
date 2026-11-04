@@ -22,7 +22,7 @@ pnpm exec vue-tsc --noEmit -p modules/report-repair-ui/tsconfig.json
 
 `index.ts` 和独立构建的 `register.ts` 使用同一注册入口，包含应用页面、匿名二维码路由与工单提示音扩展。PC 类型检查排除独立 H5，H5 按自己的依赖和 tsconfig 验证。主工程工作区配置同样排除 H5 包，避免两套 Vue 依赖混用。
 
-后端为 `jetlinks-v2/property-management` 的 `2.20`，统一服务通过网关提供 `/repair/**` 与 `/property-data/**`。菜单模板位于后端 `deploy/repair`，新环境需配置应用模板、订阅快照与角色授权。
+后端为 `jetlinks-v2/property-management` 的 `2.20`，独立报修服务通过网关提供 `/repair/**` 与 `/property-data/**`。菜单模板位于后端 `deploy/repair`，新环境需配置应用模板、订阅快照与角色授权。
 
 ## 员工 H5
 
