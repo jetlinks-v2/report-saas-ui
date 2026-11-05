@@ -1,497 +1,520 @@
 [
   {
-    "id": "repair-system-basic",
-    "code": "system-management/basic",
-    "name": "系统管理",
-    "url": "/repair/system",
+    "id": "repair-95ba1c0107da4cfe928acf91df0197ae",
+    "code": "repair-95ba1c0107da4cfe928acf91df0197ae",
+    "name": "报事报修",
+    "url": "/report-repair",
+    "icon": "ToolOutlined",
     "owner": "app",
-    "sortIndex": 50,
-    "i18nMessages": {
-      "name": {
-        "zh_CN": "系统管理",
-        "en_US": "System management",
-        "en": "System management"
-      }
-    },
+    "sortIndex": 10,
     "permissions": [],
     "buttons": [],
+    "options": {
+      "show": true
+    },
+    "i18nMessages": {
+      "name": {
+        "zh_CN": "报事报修",
+        "en_US": "Issues and repairs",
+        "en": "Issues and repairs"
+      }
+    },
     "children": [
       {
-        "id": "repair-system-OrganizationType",
-        "code": "system-management/OrganizationType",
-        "name": "组织配置",
-        "url": "/repair/system/organizations",
+        "id": "repair-system-basic",
+        "code": "system-management/basic",
+        "name": "系统管理",
+        "url": "/repair/system",
         "owner": "app",
-        "sortIndex": 1,
+        "sortIndex": 50,
         "i18nMessages": {
           "name": {
-            "zh_CN": "组织配置",
-            "en_US": "Organization configuration",
-            "en": "Organization configuration"
+            "zh_CN": "系统管理",
+            "en_US": "System management",
+            "en": "System management"
           }
         },
-        "permissions": [
+        "permissions": [],
+        "buttons": [],
+        "children": [
           {
-            "permission": "property-organization",
-            "actions": [
-              "query"
-            ]
-          }
-        ],
-        "buttons": [
-          {
-            "id": "save",
-            "name": "标注类型",
+            "id": "repair-system-OrganizationType",
+            "code": "system-management/OrganizationType",
+            "name": "组织配置",
+            "url": "/repair/system/organizations",
+            "owner": "app",
+            "sortIndex": 1,
             "i18nMessages": {
-              "zh_CN": "标注类型",
-              "en_US": "Set type",
-              "en": "Set type"
+              "name": {
+                "zh_CN": "组织配置",
+                "en_US": "Organization configuration",
+                "en": "Organization configuration"
+              }
             },
             "permissions": [
               {
                 "permission": "property-organization",
                 "actions": [
-                  "save"
+                  "query"
                 ]
               }
-            ]
-          },
-          {
-            "id": "sync",
-            "name": "同步组织",
-            "i18nMessages": {
-              "zh_CN": "同步组织",
-              "en_US": "Sync organizations",
-              "en": "Sync organizations"
-            },
-            "permissions": [
+            ],
+            "buttons": [
               {
-                "permission": "property-organization",
-                "actions": [
-                  "sync"
-                ]
-              }
-            ]
-          },
-          {
-            "id": "bind",
-            "name": "绑定空间",
-            "i18nMessages": {
-              "zh_CN": "绑定空间",
-              "en_US": "Bind space",
-              "en": "Bind space"
-            },
-            "permissions": [
-              {
-                "permission": "property-space",
-                "actions": [
-                  "save"
-                ]
-              }
-            ]
-          },
-          {
-            "id": "spaceSync",
-            "name": "同步空间",
-            "i18nMessages": {
-              "zh_CN": "同步空间",
-              "en_US": "Sync spaces",
-              "en": "Sync spaces"
-            },
-            "permissions": [
-              {
-                "permission": "property-space",
-                "actions": [
-                  "sync"
-                ]
-              }
-            ]
-          }
-        ],
-        "assetType": "organization",
-        "showPage": [
-          "property-organization"
-        ],
-        "icon": "ApartmentOutlined"
-      },
-      {
-        "id": "repair-system-User",
-        "code": "system-management/User",
-        "name": "用户管理",
-        "url": "/repair/system/users",
-        "owner": "app",
-        "sortIndex": 2,
-        "i18nMessages": {
-          "name": {
-            "zh_CN": "用户管理",
-            "en_US": "Users",
-            "en": "Users"
-          }
-        },
-        "permissions": [
-          {
-            "permission": "property-user",
-            "actions": [
-              "query"
-            ]
-          }
-        ],
-        "buttons": [
-          {
-            "id": "save",
-            "name": "标注身份",
-            "i18nMessages": {
-              "zh_CN": "标注身份",
-              "en_US": "Set identity",
-              "en": "Set identity"
-            },
-            "permissions": [
-              {
-                "permission": "property-user",
-                "actions": [
-                  "save"
-                ]
-              }
-            ]
-          },
-          {
-            "id": "sync",
-            "name": "同步用户",
-            "i18nMessages": {
-              "zh_CN": "同步用户",
-              "en_US": "Sync users",
-              "en": "Sync users"
-            },
-            "permissions": [
-              {
-                "permission": "property-user",
-                "actions": [
-                  "sync"
-                ]
-              }
-            ]
-          }
-        ],
-        "assetType": "user",
-        "showPage": [
-          "property-user"
-        ],
-        "icon": "TeamOutlined"
-      },
-      {
-        "id": "repair-system-Space",
-        "code": "system-management/Space",
-        "name": "空间管理",
-        "url": "/repair/system/spaces",
-        "owner": "app",
-        "sortIndex": 3,
-        "i18nMessages": {
-          "name": {
-            "zh_CN": "空间管理",
-            "en_US": "Space management",
-            "en": "Space management"
-          }
-        },
-        "permissions": [
-          {
-            "permission": "property-house",
-            "actions": [
-              "query"
-            ]
-          },
-          {
-            "permission": "property-space",
-            "actions": [
-              "query"
-            ]
-          },
-          {
-            "permission": "property-dictionary",
-            "actions": [
-              "query"
-            ]
-          }
-        ],
-        "buttons": [
-          {
-            "id": "save",
-            "name": "保存",
-            "i18nMessages": {
-              "zh_CN": "保存",
-              "en_US": "Save",
-              "en": "Save"
-            },
-            "permissions": [
-              {
-                "permission": "property-house",
-                "actions": [
-                  "save"
-                ]
-              }
-            ]
-          },
-          {
-            "id": "delete",
-            "name": "删除",
-            "i18nMessages": {
-              "zh_CN": "删除",
-              "en_US": "Delete",
-              "en": "Delete"
-            },
-            "permissions": [
-              {
-                "permission": "property-house",
-                "actions": [
-                  "delete"
-                ]
-              }
-            ]
-          },
-          {
-            "id": "import",
-            "name": "导入",
-            "i18nMessages": {
-              "zh_CN": "导入",
-              "en_US": "Import",
-              "en": "Import"
-            },
-            "permissions": [
-              {
-                "permission": "property-house",
-                "actions": [
-                  "import"
-                ]
-              }
-            ]
-          },
-          {
-            "id": "export",
-            "name": "导出",
-            "i18nMessages": {
-              "zh_CN": "导出",
-              "en_US": "Export",
-              "en": "Export"
-            },
-            "permissions": [
-              {
-                "permission": "property-house",
-                "actions": [
-                  "export"
-                ]
-              }
-            ]
-          },
-          {
-            "id": "sync",
-            "name": "同步空间",
-            "i18nMessages": {
-              "zh_CN": "同步空间",
-              "en_US": "Sync",
-              "en": "Sync"
-            },
-            "permissions": [
-              {
-                "permission": "property-space",
-                "actions": [
-                  "sync"
-                ]
-              }
-            ]
-          }
-        ],
-        "assetType": "space",
-        "showPage": [
-          "property-house"
-        ],
-        "icon": "HomeOutlined"
-      },
-      {
-        "id": "repair-system-Customer",
-        "code": "system-management/Customer",
-        "name": "客户管理",
-        "url": "/repair/system/customers",
-        "owner": "app",
-        "sortIndex": 4,
-        "i18nMessages": {
-          "name": {
-            "zh_CN": "客户管理",
-            "en_US": "Customer management",
-            "en": "Customer management"
-          }
-        },
-        "permissions": [
-          {
-            "permission": "property-customer",
-            "actions": [
-              "query"
-            ]
-          },
-          {
-            "permission": "property-space",
-            "actions": [
-              "query"
-            ]
-          },
-          {
-            "permission": "property-dictionary",
-            "actions": [
-              "query"
-            ]
-          },
-          {
-            "permission": "property-house",
-            "actions": [
-              "query"
-            ]
-          }
-        ],
-        "buttons": [
-          {
-            "id": "save",
-            "name": "保存",
-            "i18nMessages": {
-              "zh_CN": "保存",
-              "en_US": "Save",
-              "en": "Save"
-            },
-            "permissions": [
-              {
-                "permission": "property-customer",
-                "actions": [
-                  "save"
+                "id": "save",
+                "name": "标注类型",
+                "i18nMessages": {
+                  "zh_CN": "标注类型",
+                  "en_US": "Set type",
+                  "en": "Set type"
+                },
+                "permissions": [
+                  {
+                    "permission": "property-organization",
+                    "actions": [
+                      "save"
+                    ]
+                  }
                 ]
               },
+              {
+                "id": "sync",
+                "name": "同步组织",
+                "i18nMessages": {
+                  "zh_CN": "同步组织",
+                  "en_US": "Sync organizations",
+                  "en": "Sync organizations"
+                },
+                "permissions": [
+                  {
+                    "permission": "property-organization",
+                    "actions": [
+                      "sync"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "bind",
+                "name": "绑定空间",
+                "i18nMessages": {
+                  "zh_CN": "绑定空间",
+                  "en_US": "Bind space",
+                  "en": "Bind space"
+                },
+                "permissions": [
+                  {
+                    "permission": "property-space",
+                    "actions": [
+                      "save"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "spaceSync",
+                "name": "同步空间",
+                "i18nMessages": {
+                  "zh_CN": "同步空间",
+                  "en_US": "Sync spaces",
+                  "en": "Sync spaces"
+                },
+                "permissions": [
+                  {
+                    "permission": "property-space",
+                    "actions": [
+                      "sync"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "assetType": "organization",
+            "showPage": [
+              "property-organization"
+            ],
+            "icon": "ApartmentOutlined"
+          },
+          {
+            "id": "repair-system-User",
+            "code": "system-management/User",
+            "name": "用户管理",
+            "url": "/repair/system/users",
+            "owner": "app",
+            "sortIndex": 2,
+            "i18nMessages": {
+              "name": {
+                "zh_CN": "用户管理",
+                "en_US": "Users",
+                "en": "Users"
+              }
+            },
+            "permissions": [
               {
                 "permission": "property-user",
                 "actions": [
                   "query"
                 ]
               }
-            ]
+            ],
+            "buttons": [
+              {
+                "id": "save",
+                "name": "标注身份",
+                "i18nMessages": {
+                  "zh_CN": "标注身份",
+                  "en_US": "Set identity",
+                  "en": "Set identity"
+                },
+                "permissions": [
+                  {
+                    "permission": "property-user",
+                    "actions": [
+                      "save"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "sync",
+                "name": "同步用户",
+                "i18nMessages": {
+                  "zh_CN": "同步用户",
+                  "en_US": "Sync users",
+                  "en": "Sync users"
+                },
+                "permissions": [
+                  {
+                    "permission": "property-user",
+                    "actions": [
+                      "sync"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "assetType": "user",
+            "showPage": [
+              "property-user"
+            ],
+            "icon": "TeamOutlined"
           },
           {
-            "id": "delete",
-            "name": "删除",
+            "id": "repair-system-Space",
+            "code": "system-management/Space",
+            "name": "空间管理",
+            "url": "/repair/system/spaces",
+            "owner": "app",
+            "sortIndex": 3,
             "i18nMessages": {
-              "zh_CN": "删除",
-              "en_US": "Delete",
-              "en": "Delete"
+              "name": {
+                "zh_CN": "空间管理",
+                "en_US": "Space management",
+                "en": "Space management"
+              }
+            },
+            "permissions": [
+              {
+                "permission": "property-house",
+                "actions": [
+                  "query"
+                ]
+              },
+              {
+                "permission": "property-space",
+                "actions": [
+                  "query"
+                ]
+              },
+              {
+                "permission": "property-dictionary",
+                "actions": [
+                  "query"
+                ]
+              }
+            ],
+            "buttons": [
+              {
+                "id": "save",
+                "name": "保存",
+                "i18nMessages": {
+                  "zh_CN": "保存",
+                  "en_US": "Save",
+                  "en": "Save"
+                },
+                "permissions": [
+                  {
+                    "permission": "property-house",
+                    "actions": [
+                      "save"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "delete",
+                "name": "删除",
+                "i18nMessages": {
+                  "zh_CN": "删除",
+                  "en_US": "Delete",
+                  "en": "Delete"
+                },
+                "permissions": [
+                  {
+                    "permission": "property-house",
+                    "actions": [
+                      "delete"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "import",
+                "name": "导入",
+                "i18nMessages": {
+                  "zh_CN": "导入",
+                  "en_US": "Import",
+                  "en": "Import"
+                },
+                "permissions": [
+                  {
+                    "permission": "property-house",
+                    "actions": [
+                      "import"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "export",
+                "name": "导出",
+                "i18nMessages": {
+                  "zh_CN": "导出",
+                  "en_US": "Export",
+                  "en": "Export"
+                },
+                "permissions": [
+                  {
+                    "permission": "property-house",
+                    "actions": [
+                      "export"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "sync",
+                "name": "同步空间",
+                "i18nMessages": {
+                  "zh_CN": "同步空间",
+                  "en_US": "Sync",
+                  "en": "Sync"
+                },
+                "permissions": [
+                  {
+                    "permission": "property-space",
+                    "actions": [
+                      "sync"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "assetType": "space",
+            "showPage": [
+              "property-house"
+            ],
+            "icon": "HomeOutlined"
+          },
+          {
+            "id": "repair-system-Customer",
+            "code": "system-management/Customer",
+            "name": "客户管理",
+            "url": "/repair/system/customers",
+            "owner": "app",
+            "sortIndex": 4,
+            "i18nMessages": {
+              "name": {
+                "zh_CN": "客户管理",
+                "en_US": "Customer management",
+                "en": "Customer management"
+              }
             },
             "permissions": [
               {
                 "permission": "property-customer",
                 "actions": [
-                  "delete"
+                  "query"
+                ]
+              },
+              {
+                "permission": "property-space",
+                "actions": [
+                  "query"
+                ]
+              },
+              {
+                "permission": "property-dictionary",
+                "actions": [
+                  "query"
+                ]
+              },
+              {
+                "permission": "property-house",
+                "actions": [
+                  "query"
                 ]
               }
-            ]
+            ],
+            "buttons": [
+              {
+                "id": "save",
+                "name": "保存",
+                "i18nMessages": {
+                  "zh_CN": "保存",
+                  "en_US": "Save",
+                  "en": "Save"
+                },
+                "permissions": [
+                  {
+                    "permission": "property-customer",
+                    "actions": [
+                      "save"
+                    ]
+                  },
+                  {
+                    "permission": "property-user",
+                    "actions": [
+                      "query"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "delete",
+                "name": "删除",
+                "i18nMessages": {
+                  "zh_CN": "删除",
+                  "en_US": "Delete",
+                  "en": "Delete"
+                },
+                "permissions": [
+                  {
+                    "permission": "property-customer",
+                    "actions": [
+                      "delete"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "import",
+                "name": "导入",
+                "i18nMessages": {
+                  "zh_CN": "导入",
+                  "en_US": "Import",
+                  "en": "Import"
+                },
+                "permissions": [
+                  {
+                    "permission": "property-customer",
+                    "actions": [
+                      "import"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "export",
+                "name": "导出",
+                "i18nMessages": {
+                  "zh_CN": "导出",
+                  "en_US": "Export",
+                  "en": "Export"
+                },
+                "permissions": [
+                  {
+                    "permission": "property-customer",
+                    "actions": [
+                      "export"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "assetType": "organization",
+            "showPage": [
+              "property-customer"
+            ],
+            "icon": "TeamOutlined"
           },
           {
-            "id": "import",
-            "name": "导入",
+            "id": "repair-system-Dictionary",
+            "code": "system-management/Dictionary",
+            "name": "字典配置",
+            "url": "/repair/system/dictionaries",
+            "owner": "app",
+            "sortIndex": 5,
             "i18nMessages": {
-              "zh_CN": "导入",
-              "en_US": "Import",
-              "en": "Import"
-            },
-            "permissions": [
-              {
-                "permission": "property-customer",
-                "actions": [
-                  "import"
-                ]
+              "name": {
+                "zh_CN": "字典配置",
+                "en_US": "Dictionaries",
+                "en": "Dictionaries"
               }
-            ]
-          },
-          {
-            "id": "export",
-            "name": "导出",
-            "i18nMessages": {
-              "zh_CN": "导出",
-              "en_US": "Export",
-              "en": "Export"
-            },
-            "permissions": [
-              {
-                "permission": "property-customer",
-                "actions": [
-                  "export"
-                ]
-              }
-            ]
-          }
-        ],
-        "assetType": "organization",
-        "showPage": [
-          "property-customer"
-        ],
-        "icon": "TeamOutlined"
-      },
-      {
-        "id": "repair-system-Dictionary",
-        "code": "system-management/Dictionary",
-        "name": "字典配置",
-        "url": "/repair/system/dictionaries",
-        "owner": "app",
-        "sortIndex": 5,
-        "i18nMessages": {
-          "name": {
-            "zh_CN": "字典配置",
-            "en_US": "Dictionaries",
-            "en": "Dictionaries"
-          }
-        },
-        "permissions": [
-          {
-            "permission": "property-dictionary",
-            "actions": [
-              "query"
-            ]
-          }
-        ],
-        "buttons": [
-          {
-            "id": "save",
-            "name": "保存",
-            "i18nMessages": {
-              "zh_CN": "保存",
-              "en_US": "Save",
-              "en": "Save"
             },
             "permissions": [
               {
                 "permission": "property-dictionary",
                 "actions": [
-                  "save"
+                  "query"
                 ]
               }
-            ]
-          },
-          {
-            "id": "delete",
-            "name": "删除",
-            "i18nMessages": {
-              "zh_CN": "删除",
-              "en_US": "Delete",
-              "en": "Delete"
-            },
-            "permissions": [
+            ],
+            "buttons": [
               {
-                "permission": "property-dictionary",
-                "actions": [
-                  "delete"
+                "id": "save",
+                "name": "保存",
+                "i18nMessages": {
+                  "zh_CN": "保存",
+                  "en_US": "Save",
+                  "en": "Save"
+                },
+                "permissions": [
+                  {
+                    "permission": "property-dictionary",
+                    "actions": [
+                      "save"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "delete",
+                "name": "删除",
+                "i18nMessages": {
+                  "zh_CN": "删除",
+                  "en_US": "Delete",
+                  "en": "Delete"
+                },
+                "permissions": [
+                  {
+                    "permission": "property-dictionary",
+                    "actions": [
+                      "delete"
+                    ]
+                  }
                 ]
               }
-            ]
+            ],
+            "assetType": "organization",
+            "showPage": [
+              "property-dictionary"
+            ],
+            "icon": "BookOutlined"
           }
         ],
-        "assetType": "organization",
-        "showPage": [
-          "property-dictionary"
-        ],
-        "icon": "BookOutlined"
+        "icon": "ApartmentOutlined"
       }
-    ],
-    "icon": "ApartmentOutlined"
+    ]
   }
 ]
