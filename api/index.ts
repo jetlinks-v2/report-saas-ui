@@ -11,9 +11,7 @@ interface TypedRequest {
 }
 // 当前共享包的 request 未导出泛型签名，在 API 边界统一补齐响应类型。
 const apiRequest = request as TypedRequest
-/** 报修选项直接使用统一基础模块；绑定以根空间归属为准。 */
-export const queryProjects = () => apiRequest.get<SharedRecord[]>('/property/space/_projects')
-export const queryProjectSpaces = (projectId: string) => apiRequest.get<SharedRecord[]>('/property/space/_tree?projectId='+encodeURIComponent(projectId))
+export { queryProjects, queryProjectSpaces } from './propertyBase'
 export const queryOrders = (query: Query) => apiRequest.post<Pager<Order>>('/repair/orders/_query', query)
 export const queryOperationLogs = (query:Query) => apiRequest.post<Pager<OperationLog>>('/repair/operation-logs/_query',query)
 export const countOrders = (query: Query) => apiRequest.post<number>('/repair/orders/_count', query)

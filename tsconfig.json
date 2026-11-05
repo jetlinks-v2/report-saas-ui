@@ -10,7 +10,23 @@
       "../../jetlinks-web-core/node_modules/@types",
       "../../node_modules/@types",
       "../../node_modules"
-    ]
+    ],
+    "paths": {
+      "@property-base-ui/*": [
+        "modules/property-base-ui/*"
+      ],
+      "@jetlinks-web-core/*": [
+        "jetlinks-web-core/src/*"
+      ],
+      "@/*": [
+        "jetlinks-web-core/src/*"
+      ],
+      "@theme-config": [
+        "configs/theme/index.ts",
+        "jetlinks-web-core/configs/theme/index.ts"
+      ]
+    },
+    "baseUrl": "../.."
   },
   "include": [
     "./**/*.ts",

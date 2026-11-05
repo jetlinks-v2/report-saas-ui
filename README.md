@@ -16,7 +16,7 @@ pnpm dev
 在主工程根目录执行模块构建与类型检查：
 
 ```sh
-pnpm -F jetlinks-web-core build -- --module-name report-repair-ui
+pnpm --filter report-repair-ui build:with-base
 pnpm exec vue-tsc --noEmit -p modules/report-repair-ui/tsconfig.json
 ```
 
@@ -37,13 +37,13 @@ docker compose -f compose.yml up -d --build
 
 ## 模块能力
 
-通过应用模板菜单的 `options.meta.componentCode` 注册页面：`repair/Orders` 工单处置、`repair/Overview` 状态概览、`repair/Configuration` 渠道/分类/等级等配置（按既有菜单路径选择页面）、`repair/Reports` 报表和评价查询、`repair/Exports` 导出记录。系统管理在本模块独立实现，五个页面位于 `views/system-management`，使用 `baseMenu.json` 中的 `system-management/*` 组件编码及 `/repair/system/*` 路由。既有报修菜单 ID 和 URL 保持不变，旧公共资料菜单应隐藏。新增菜单需要同步到应用模板、服务套餐、项目订阅和角色，保留原资产授权。
+通过应用模板菜单的 `options.meta.componentCode` 注册页面：`repair/Orders` 工单处置、`repair/Overview` 状态概览、`repair/Configuration` 渠道/分类/等级等配置（按既有菜单路径选择页面）、`repair/Reports` 报表和评价查询、`repair/Exports` 导出记录。组织、用户、空间、客户和字典由 `property-base-ui` 统一提供，报修不再维护基础页面或菜单副本。既有报修业务菜单 ID 和 URL 保持不变。新增菜单需要同步到应用模板、服务套餐、项目订阅和角色，保留原资产授权。
 
-页面使用现有应用访问上下文与公共上传组件；服务端执行租户、应用、资产和动作权限。工单列表分页，详情使用抽屉查看及执行动作，处理过程使用时间线。基础资料从 Cloud 同步到基础模块，系统管理通过 `/property/**` 维护组织类型、用户身份、空间绑定与档案。
+页面使用现有应用访问上下文与公共上传组件；服务端执行租户、应用、资产和动作权限。工单列表分页，详情使用抽屉查看及执行动作，处理过程使用时间线。基础资料从 Cloud 同步到基础服务，公共基础前端通过 `/property/**` 维护组织类型、用户身份、空间绑定与档案。报修项目和空间选项经 `property-base-ui` 注册中心公开 API 获取；派单候选仍走报修业务接口。
 
 当前页面已接入延期/废弃/非正常关单与等级审核、转派/抢单、回访、双侧评价、签字、有偿费用和报表导出。业主评价/签字由员工后台代登记，业主信息与登记员工分开显示。Cloud 站内通知已接入原生消息中心；匿名二维码配置与公开表单、受限上传和提交已接通。其他通知渠道、业主本人入口和查验联动仍按约定边界处理；设备与第三方开放接口本轮暂不接入；不能把菜单预览作为已迁移的业务能力。工程构建、API 和浏览器验收由后端项目与本地验证记录统一说明。
 
-模块包含独立构建需要的 `register.ts`、`baseMenu.ts` 与 `baseMenu.json`。`baseMenu.json` 提供系统管理菜单定义，既有报修菜单继续使用后端部署模板；实际授权统一由应用模板、服务套餐与角色维护。配置按业务项目筛选；切换发起项目时清空已选分类、渠道和空间。派单选项从后端目标工单的候选人接口读取，不以员工目录直接作为维修员列表。模块可独立构建；全工作区类型检查仍可能报告既有共享核心及依赖错误。
+模块包含独立构建需要的 `register.ts`、`baseMenu.ts` 与 `baseMenu.json`。`baseMenu.json` 为空，不重复初始化公共菜单；既有报修业务菜单继续使用后端部署模板；实际授权统一由应用模板、服务套餐与角色维护。配置按业务项目筛选；切换发起项目时清空已选分类、渠道和空间。派单选项从后端目标工单的候选人接口读取，不以员工目录直接作为维修员列表。模块可独立构建；全工作区类型检查仍可能报告既有共享核心及依赖错误。
 
 新增页面目录后应重启9200的Vite开发进程，使import.meta.glob收集新路由。角色待接单池允许具备接单权限的候选人在详情中发起接单；实际角色及资产资格由后端实时判定。
 
@@ -63,4 +63,10 @@ docker compose -f compose.yml up -d --build
 
 ## 中英文切换
 
-PC 报事报修沿用主工程 `vue-i18n` 与 `locales/lang/zh.json`、`en.json` 的自动加载机制，页面、处理表单、配置、统计、导出、打印及匿名二维码表单的固定文案统一放在 `ReportRepair` 命名空间。右上角切换语言会按主工程既有行为刷新页面；日期也随当前语言显示。菜单与按钮的中英文元数据同步保存在后端 `deploy/repair/menus.json` 和 `template-grant.json`；旧环境保留的中文 `i18nName` 由语言包中的兼容入口解析。系统管理继续使用已有 `ReportSystem` 资源。用户录入的分类、项目、描述等业务数据保留原文，回访方式/结果提交值及后台渠道匹配不随语言改变。员工 H5 是独立应用，不属于 PC 右上角语言开关的范围。
+PC 报事报修沿用主工程 `vue-i18n` 与 `locales/lang/zh.json`、`en.json` 的自动加载机制，页面、处理表单、配置、统计、导出、打印及匿名二维码表单的固定文案统一放在 `ReportRepair` 命名空间。右上角切换语言会按主工程既有行为刷新页面；日期也随当前语言显示。菜单与按钮的中英文元数据同步保存在后端 `deploy/repair/menus.json` 和 `template-grant.json`；旧环境保留的中文 `i18nName` 由语言包中的兼容入口解析。公共基础管理的中英文资源由 `property-base-ui` 维护，报修不再注册 `ReportSystem` 副本。用户录入的分类、项目、描述等业务数据保留原文，回访方式/结果提交值及后台渠道匹配不随语言改变。员工 H5 是独立应用，不属于 PC 右上角语言开关的范围。
+
+## 公共基础前端
+
+宿主须检出 `modules/property-base-ui`（`jetlinks-v2/property-base-ui` 的 `2.20`）。开发和聚合构建白名单包含 `report-repair-ui,property-base-ui`；`pnpm --filter report-repair-ui dev` 同时加载公共和认证模块。`build` 只输出独立报修模块包，`build:with-base` 输出宿主 `dist/`，实际 SaaS 发布继续与运行端、认证及所需业务模块一起构建。
+
+公共菜单只由公共模块的 `baseMenu.ts` 提供给宿主初始化一次，不在报修菜单中导入或拼接。保留公共模块历史 `charging/*` 编码及 `property-*` 后端权限，不代表依赖收费业务。已有环境须按后端 `deploy/property-base/README.md` 增量迁移模板、套餐、订阅和角色，验收后停用旧 `repair-system-*` 菜单；单纯更新代码不会迁移已保存的菜单与授权。不修改基础表或业务数据。
