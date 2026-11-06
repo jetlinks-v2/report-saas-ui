@@ -1,6 +1,6 @@
 <template>
   <a-card :title="title">
-    <template #extra><a-space v-if="!isFlow||activeTab==='configuration'"><a-button v-if="canSave&&kind==='category'&&!isFlow" @click="formSettings.edit(businessProjectId)">{{$t('ReportRepair.formDisplaySettings')}}</a-button><a-button @click="load">{{$t('ReportRepair.refresh')}}</a-button><a-button v-if="canSave" type="primary" @click="edit()">{{$t('ReportRepair.add')}}</a-button></a-space></template>
+    <template #extra><a-space v-if="!isFlow||activeTab==='configuration'"><a-button v-if="canSave&&kind==='category'&&!isFlow" @click="formSettings.edit(businessProjectId)">{{$t('ReportRepair.formDisplaySettings')}}</a-button><a-button v-if="canSave" type="primary" @click="edit()">{{$t('ReportRepair.add')}}</a-button></a-space></template>
     <a-tabs v-if="isFlow" v-model:active-key="activeTab"><a-tab-pane key="configuration" :tab="$t('ReportRepair.workflowConfiguration')" /><a-tab-pane key="diagram" :tab="$t('ReportRepair.workflowDiagram')" /></a-tabs>
     <RepairWorkflowDiagram v-if="isFlow&&activeTab==='diagram'" />
     <template v-if="!isFlow||activeTab==='configuration'">

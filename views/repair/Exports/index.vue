@@ -1,5 +1,5 @@
 <template>
- <a-card :title="$t('ReportRepair.exports')"><template #extra><a-button :loading="loading" @click="load">{{$t('ReportRepair.refresh')}}</a-button></template>
+ <a-card :title="$t('ReportRepair.exports')">
   <ConditionFilter v-model="terms" :fields="fields" @change="search" />
   <a-alert v-if="error" :message="error" type="error" show-icon style="margin-bottom:16px" />
   <a-table :data-source="rows" :loading="loading" row-key="id" :pagination="{current,total,pageSize:20,showSizeChanger:false}" @change="pageChange">

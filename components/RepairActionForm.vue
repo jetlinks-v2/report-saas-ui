@@ -11,7 +11,7 @@
       <a-form-item :label="$t('ReportRepair.ownerContactInformation')" name="ownerPhone" required><a-input v-model:value="form.ownerPhone" :maxlength="64" /></a-form-item>
       <a-form-item v-if="action==='sign'" :label="$t('ReportRepair.ownerSignatureImage')" name="signatureFileId" required><FileUpload v-model:value="form.signatureFileId" accept="image/*" :max-count="1" :multiple="false" :btn-text="$t('ReportRepair.uploadSignatureImage')" /></a-form-item>
     </template>
-    <a-form-item v-if="['dispatch','transfer'].includes(action)" :label="$t('ReportRepair.assignee')" name="assignedUserId" required><a-select v-model:value="form.assignedUserId" :options="options.people" show-search option-filter-prop="label" /></a-form-item>
+    <a-form-item v-if="['dispatch','transfer'].includes(action)" :label="$t('ReportRepair.assignee')" name="assignedUserId" required><a-select v-model:value="form.assignedUserId" :options="options.people" show-search :filter-option="false" :loading="options.peopleLoading" :placeholder="$t('ReportRepair.searchAssignee')" @search="emit('assigneeSearch',$event)"><template #notFoundContent><a-spin v-if="options.peopleLoading" size="small" /><span v-else>{{options.peopleError||$t('ReportRepair.noEligibleAssignees')}}</span></template></a-select><a-alert v-if="options.peopleError" :message="options.peopleError" type="error" show-icon /></a-form-item>
     <template v-if="(action==='follow'&&order.status===7)||action==='changeLevel'">
       <a-form-item :label="$t('ReportRepair.issuePriority')" name="levelId" required><a-select v-model:value="form.levelId" :options="options.levels" /></a-form-item>
     </template>
@@ -60,8 +60,8 @@ import { formatTime, reviewNames } from '../utils'
 import RepairAttachments from './RepairAttachments.vue'
 import { useRepairActionForm } from '../hooks/useRepairActionForm'
 const { t: $t } = useI18n()
-const props=defineProps<{ form:ActionInput; action:string; order:Order; options:{readOnly:boolean;completionTypes:SelectOption[];categoryTree:CategoryOption[];categoryPath:string[];satisfactions:Configuration[];people:SelectOption[];levels:SelectOption[];categories:SelectOption[];labels:SelectOption[];evaluationLabels:SelectOption[];replies:SelectOption[];reviews:Review[]} }>()
-const emit=defineEmits<{uploading:[value:boolean];completionType:[action:string]}>()
+const props=defineProps<{ form:ActionInput; action:string; order:Order; options:{readOnly:boolean;completionTypes:SelectOption[];categoryTree:CategoryOption[];categoryPath:string[];satisfactions:Configuration[];peopleLoading?:boolean;peopleError?:string;people:SelectOption[];levels:SelectOption[];categories:SelectOption[];labels:SelectOption[];evaluationLabels:SelectOption[];replies:SelectOption[];reviews:Review[]} }>()
+const emit=defineEmits<{uploading:[value:boolean];completionType:[action:string];assigneeSearch:[text:string]}>()
 const {formRef,rules,content,showContent,reasonLimit,validate,clearValidate}=useRepairActionForm(props)
 defineExpose({validate,clearValidate})
 </script>

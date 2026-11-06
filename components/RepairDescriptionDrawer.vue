@@ -1,6 +1,6 @@
 <template>
   <a-drawer :open="!!state.parent" :title="state.parent?.name+$t('ReportRepair.issueDescriptions')" :width="760" @close="emit('close')">
-    <a-space style="margin-bottom:16px"><a-button v-if="canSave" type="primary" @click="emit('edit')">{{$t('ReportRepair.add')}}</a-button><a-button @click="emit('refresh')">{{$t('ReportRepair.refresh')}}</a-button></a-space>
+    <a-space style="margin-bottom:16px"><a-button v-if="canSave" type="primary" @click="emit('edit')">{{$t('ReportRepair.add')}}</a-button></a-space>
     <a-alert v-if="state.error" :message="state.error" type="error" show-icon style="margin-bottom:12px" />
     <a-table table-layout="fixed" :data-source="state.rows" :loading="state.loading" row-key="id" :pagination="{current:state.current,pageSize:state.pageSize,total:state.total,showSizeChanger:true,pageSizeOptions:['10','20','30','50']}" @change="emit('page',$event)">
       <a-table-column key="content" :title="$t('ReportRepair.issueDescription')"><template #default="{record}"><span style="white-space:pre-wrap;overflow-wrap:anywhere">{{record.configuration.content||record.name}}</span></template></a-table-column>

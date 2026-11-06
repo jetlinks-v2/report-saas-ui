@@ -24,11 +24,12 @@ export const deleteConfiguration = (id:string) => apiRequest.remove<void>(`/repa
 export const saveConfiguration = (data: Configuration) => apiRequest.post<Configuration>('/repair/configurations', data)
 export const getAuthorization = () => apiRequest.get<Authorization>('/authorize/me')
 
-export const getAssignees = (id: string, action='dispatch') => apiRequest.get<SharedRecord[]>(`/repair/orders/${id}/${action==='transfer'?'transfer-assignees':'assignees'}`)
+export const getAssignees = (id: string, action='dispatch',search='',limit=20) => apiRequest.get<SharedRecord[]>(`/repair/orders/${id}/${action==='transfer'?'transfer-assignees':'assignees'}?${new URLSearchParams({search,limit:String(limit)})}`)
 export const queryApplicationRoles = (applicationId: string) => apiRequest.post<Pager<{id: string; name: string}>>('/role/_query/', {paging:false,terms:[{column:'applicationId',value:applicationId}]})
 
 export const getReviews = (id:string) => apiRequest.get<Review[]>(`/repair/orders/${id}/reviews`)
 
+export const queryStatusCounts = (query:Query) => apiRequest.post<ReportRow[]>('/repair/orders/_status-counts',query)
 export const queryStatistics = (query:Query) => apiRequest.post<ReportRow[]>('/repair/orders/_statistics',query)
 export const createExport = (query:Query,options:{type?:ExportType;reviewStatus?:number;reviewKind?:string}={}) => {
  const params=new URLSearchParams()

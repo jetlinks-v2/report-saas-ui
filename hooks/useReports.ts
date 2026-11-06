@@ -41,6 +41,6 @@ export function useReports(){
  }catch(e){error.value=errorMessage(e)}finally{exporting.value=false}}
  let ready=false
  watch(()=>[route.path,route.query.q],([path,q],[oldPath])=>{if(ready&&(path!==oldPath||encodeConditionFilterQuery(terms.value,fields.value)!==(q||''))){terms.value=decodeConditionFilterQuery(q,fields.value);current.value=1;rows.value=[];orders.value=[];void load()}})
- onMounted(async()=>{try{await loadPermissions();projects.value=result(await queryProjects()).map(row=>({value:row.id,label:displayName(row)}));terms.value=decodeConditionFilterQuery(route.query.q,fields.value);ready=true;await load()}catch(e){error.value=errorMessage(e)}})
+ onMounted(async()=>{try{await Promise.all([loadPermissions(),queryProjects().then(response=>{projects.value=result(response).map(row=>({value:row.id,label:displayName(row)}))})]);terms.value=decodeConditionFilterQuery(route.query.q,fields.value);ready=true;await load()}catch(e){error.value=errorMessage(e)}})
  return {terms,page,columns,fields,rows,orders,total,current,loading,exporting,error,canExport,canDrill,drill,load,search,pageChange,exportData,exportOpen,exportScope,startExport}
 }

@@ -5,24 +5,30 @@ import { encodeConditionFilterQuery } from '@jetlinks-web-core/components/Condit
 import { orderFilterFields } from '../services/reports'
 import dayjs, { type Dayjs } from 'dayjs'
 import type { EChartsCoreOption } from 'echarts/core'
-import { queryDashboard, queryStatistics, queryProjects } from '../api'
+import { queryDashboard, queryStatistics } from '../api'
 import type { Dashboard, ReportRow } from '../types'
-import { errorMessage, result, statusNames } from '../utils'
+import { errorMessage, result } from '../utils'
 const { t } = i18n.global
 
-/** 全量卡片和项目占比不随走势日期切换；图表按上海时区补零，复用后端资产查询范围。 */
+/** 首页指标、分布与走势共用报事时间范围，钻取保持相同筛选。 */
 export function useOverview() {
   const route=useRoute(),router=useRouter()
   const loading=ref(false),error=ref(''),period=ref('week')
   const range=ref<[Dayjs,Dayjs]>([dayjs().startOf('week'),dayjs().endOf('week')])
-  const summary=ref<ReportRow[]>([]),projectTotal=ref(0)
+  const summary=ref<ReportRow[]>([])
+  const appliedRange=ref<[number,number]>()
+  const periodLabel=computed(()=>appliedRange.value?t('ReportRepair.statisticsPeriod',{start:dayjs(appliedRange.value[0]).format('YYYY-MM-DD'),end:dayjs(appliedRange.value[1]).format('YYYY-MM-DD')}):'')
   const dashboard=ref<Dashboard>({trend:[],urgency:[],category:[]})
   const overall=computed(()=>summary.value.reduce((sum,row)=>sum+Number(row.total||0),0))
+  const sum=(key:string)=>summary.value.reduce((value,row)=>value+Number(row[key]||0),0)
+  const percent=(part:number,total:number)=>total?Number((part/total*100).toFixed(2)):0
+  // 比率按所选时间内的分子/分母计算，不能平均各项目比率；无分母时展示空值。
   const cards=computed(()=>[
-    {name:t('ReportRepair.totalIssues'),count:overall.value,clickable:true},{name:t('ReportRepair.totalProjects'),count:projectTotal.value},
-    {name:t('ReportRepair.activeProjects'),count:summary.value.length},{name:t('ReportRepair.inactiveProjects'),count:Math.max(0,projectTotal.value-summary.value.length)},
+    {name:t('ReportRepair.totalIssues'),count:overall.value,suffix:t('ReportRepair.countUnit'),hint:t('ReportRepair.totalIssueHint'),clickable:true},
+    {name:t('ReportRepair.reportCompletionRate'),count:overall.value-sum('abandoned')?percent(sum('completed'),overall.value-sum('abandoned')):'—',suffix:'%',hint:t('ReportRepair.completionRateHint')},
+    {name:t('ReportRepair.timelyCompletionRate'),count:sum('withDeadline')?percent(sum('timelyCompleted'),sum('withDeadline')):'—',suffix:'%',hint:t('ReportRepair.timelyRateHint')},
+    {name:t('ReportRepair.ownerPositiveReviewRate'),count:sum('ownerEvaluated')?percent(sum('ownerPositive'),sum('ownerEvaluated')):'—',suffix:'%',hint:t('ReportRepair.ownerPositiveHint')},
   ])
-  const counts=computed(()=>[0,6,7,1,8,9,5].map((status,index)=>({name:statusNames[status],count:summary.value.reduce((sum,row)=>sum+Number(row[['noDistributed','waitAccept','waitFollow','handling','waitCallback','waitAudit','archived'][index]]||0),0)})))
   const projects=computed(()=>summary.value.map<ReportRow & {rate:number}>(row=>({...row,rate:overall.value?Number((Number(row.total)/overall.value*100).toFixed(2)):0}))
     .sort((a,b)=>Number(b.total)-Number(a.total)))
   const projectPagination=reactive({current:1,pageSize:4})
@@ -30,7 +36,7 @@ export function useOverview() {
     projectPagination.current=page.current||1;projectPagination.pageSize=page.pageSize||4
   }
   const openOrders=(projectId?:string)=>{
-    const q=encodeConditionFilterQuery(projectId?[{column:'businessProjectId',termType:'eq',value:projectId}]:[],
+    const q=encodeConditionFilterQuery([...(appliedRange.value?[{column:'createTime',termType:'btw',value:appliedRange.value}]:[]),...(projectId?[{column:'businessProjectId',termType:'eq',value:projectId}]:[])],
       orderFilterFields(projects.value.map(row=>({value:row.projectId,label:row.projectName}))))||undefined
     void router.push({path:'/businessProcessing/reportedThatRecords',query:{...route.query,q}})
   }
@@ -48,24 +54,30 @@ export function useOverview() {
   ] as const).map(([key,name,type])=>({name,type,data:trend.value.map(row=>row[key])}))}))
   const pie=(rows:{name:string;total:number}[]):EChartsCoreOption=>({tooltip:{trigger:'item'},legend:{bottom:0},series:[{type:'pie',radius:['40%','65%'],center:['50%','44%'],data:rows.map(row=>({name:row.name,value:row.total})),label:{formatter:'{b}: {c}'}}]})
   const urgencyOption=computed(()=>pie(dashboard.value.urgency.map(row=>({...row,name:({'0':t('ReportRepair.notSet'),'1':t('ReportRepair.urgencyNormal'),'2':t('ReportRepair.urgent'),'3':t('ReportRepair.veryUrgent')} as Record<string,string>)[row.name]||row.name}))))
-  const categoryOption=computed(()=>pie(dashboard.value.category))
+  // 分类占比沿用原环形图，仅展示当前时间范围内报事数量最多的十类。
+  const categoryOption=computed(()=>pie([...dashboard.value.category]
+    .sort((a,b)=>Number(b.total)-Number(a.total)).slice(0,10)))
   let sequence=0
   const load=async()=>{
     if(!range.value?.[0]||!range.value?.[1])return
     if(range.value[1].diff(range.value[0],'day')>366){error.value=t('ReportRepair.selectADateRangeOfUpToOneYear');return}
     const current=++sequence;loading.value=true;error.value=''
     try {
-      const [statistics,organizations,charts]=await Promise.all([
-        queryStatistics({}),queryProjects(),
-        queryDashboard({terms:[{column:'createTime',termType:'btw',value:[range.value[0].startOf('day').valueOf(),range.value[1].endOf('day').valueOf()]}]},interval.value)
+      const dates:[number,number]=[range.value[0].startOf('day').valueOf(),range.value[1].endOf('day').valueOf()]
+      const query={terms:[{column:'createTime',termType:'btw',value:dates}]}
+      // 同一次日期快照传给全部统计，过期响应由 sequence 丢弃。
+
+      const [statistics,charts]=await Promise.all([
+        queryStatistics(query),
+        queryDashboard(query,interval.value)
       ])
       if(current!==sequence)return
-      summary.value=result(statistics);projectTotal.value=result(organizations).length;dashboard.value=result(charts)
+      summary.value=result(statistics);dashboard.value=result(charts);appliedRange.value=dates
       if((projectPagination.current-1)*projectPagination.pageSize>=projects.value.length)projectPagination.current=1
-    }catch(e){if(current===sequence)error.value=errorMessage(e)}finally{if(current===sequence)loading.value=false}
+    }catch(e){if(current===sequence){error.value=errorMessage(e)}}finally{if(current===sequence)loading.value=false}
   }
   const changePeriod=(value:string)=>{period.value=value;const unit=value==='week'?'week':value==='month'?'month':'year';range.value=[dayjs().startOf(unit),dayjs().endOf(unit)];void load()}
   const changeRange=()=>{period.value='custom';void load()}
   onMounted(load)
-  return {loading,error,period,range,cards,counts,projects,projectPagination,changeProjectPage,openOrders,dashboard,trendOption,urgencyOption,categoryOption,load,changePeriod,changeRange}
+  return {loading,error,period,range,periodLabel,cards,projects,projectPagination,changeProjectPage,openOrders,dashboard,trendOption,urgencyOption,categoryOption,load,changePeriod,changeRange}
 }

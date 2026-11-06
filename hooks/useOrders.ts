@@ -1,6 +1,6 @@
 import i18n from '@jetlinks-web-core/locales'
 import { useRoute, useRouter } from 'vue-router'
-import { computed, onMounted, onBeforeUnmount, reactive, ref, watch, nextTick } from 'vue'
+import { computed, onMounted, onBeforeUnmount, onDeactivated, reactive, ref, watch, nextTick } from 'vue'
 import { buildQueryFilter, encodeConditionFilterQuery, type ConditionTerm, type ConditionExpressionNode } from '@jetlinks-web-core/components/ConditionFilter'
 import { orderFilterFields, restoreOrderQuery } from '../services/reports'
 import { categoryPath, categoryTree } from '../services/intake'
@@ -30,7 +30,13 @@ export function useOrders() {
   const actionForm=reactive<ActionInput>({description:'',rework:false})
   const options=(items:SharedRecord[])=>items.map(x=>({value:x.id,label:displayName(x)}))
   const projectOptions=computed(()=>options(projects.value)), personOptions=computed(()=>options(people.value))
-  const actionUploading=ref(false)
+  const peopleLoading=ref(false),peopleError=ref('')
+  let peopleSearchTimer:ReturnType<typeof setTimeout>|undefined,peopleRevision=0
+  const actionUploading=ref(false), optionsLoading=ref(false),optionsError=ref(false)
+  let navigationRevision=0,detailRevision=0,actionRevision=0,summaryRevision=0
+  const initialPath=route.path
+  const activePage=()=>route.path===initialPath||(route.path.endsWith('/newsstandAudit')||route.path.endsWith('/reportedThatRecords'))
+  let summaryKey=''
   const completionReadOnly=computed(()=>action.value==='finish'&&!!selected.value&&!!signedCompletion(selected.value,history.value,reviews.value))
   const completionTypes=computed(()=>[{value:'finish',label:t('ReportRepair.normalClosure')},...(can('close')&&!selected.value?.paid?[{value:'close',label:t('ReportRepair.abnormalClosure')}]:[])])
   const actionCategoryTree=computed(()=>categoryTree(configurations.value))
@@ -51,7 +57,7 @@ export function useOrders() {
     if(!canPrint.value||!printElement.value||!selected.value)return
     disposePrint?.();disposePrint=printOrderSheet(printElement.value,selected.value.number)
   }
-  onBeforeUnmount(()=>disposePrint?.())
+  onBeforeUnmount(()=>{disposePrint?.();resetTransient()})
   const startExport=()=>{if(can('export')){exportScope.value='all';exportError.value='';exportOpen.value=true}}
   const exportOrders=async()=>{
     if(!can('export')||exporting.value)return
@@ -80,16 +86,25 @@ export function useOrders() {
     return choices.filter((name):name is string=>typeof name==='string'&&can(name)&&(!locked||name==='review'))
   })
   let queryRevision=0
-  const load=async()=>{
+  const load=async(refreshCounts=false)=>{
+    if(refreshCounts)summaryKey=''
     const own=++queryRevision
     loading.value=true;error.value=''
     try {
       const query={...orderQuery(buildQueryFilter(searchTerms.value,filterFields.value).terms,businessProjectId.value,status.value),pageIndex:current.value-1,pageSize:20}
-      const [response,summary]=await Promise.all([
-        auditMode.value?api.queryReviewOrders(query,reviewStatus.value,reviewKind.value):api.queryOrders(query),
-        auditMode.value?Promise.resolve(undefined):api.queryStatistics(orderQuery(buildQueryFilter(searchTerms.value,filterFields.value).terms,businessProjectId.value)),
-      ])
-      if(own===queryRevision){const page=result(response);rows.value=page.data;total.value=page.total;counts.value=summary?statusCounts(result(summary)):undefined}
+      // 列表完成即可展示；状态数量独立加载，分页复用同一筛选的结果。
+      const countQuery=orderQuery(buildQueryFilter(searchTerms.value,filterFields.value).terms,businessProjectId.value)
+      const key=JSON.stringify(countQuery)
+      if(auditMode.value){summaryRevision++;counts.value=undefined;summaryKey=''}
+      else if(summaryKey!==key){
+        summaryKey=key;counts.value=undefined
+        const revision=++summaryRevision
+        void api.queryStatusCounts(countQuery).then(summary=>{
+          if(revision===summaryRevision)counts.value=statusCounts(result(summary))
+        }).catch(e=>{if(revision===summaryRevision){summaryKey='';message.warning(errorMessage(e))}})
+      }
+      const response=await (auditMode.value?api.queryReviewOrders(query,reviewStatus.value,reviewKind.value):api.queryOrders(query))
+      if(own===queryRevision){const page=result(response);rows.value=page.data;total.value=page.total}
     }
     catch(e){if(own===queryRevision){error.value=errorMessage(e);counts.value=undefined}}finally{if(own===queryRevision)loading.value=false}
   }
@@ -121,11 +136,12 @@ export function useOrders() {
   }
   const changeStatusTab=(value:string)=>{status.value=value==='all'?undefined:Number(value);filter()}
   const showDetail=async(order:Order)=>{
+    const revision=++detailRevision,navigation=navigationRevision
     loading.value=true;error.value=''
-    try{const [detail,process,review]=await Promise.all([api.getOrder(order.id),api.getOrderHistory(order.id),api.getReviews(order.id)]);selected.value=result(detail);history.value=result(process);reviews.value=result(review);detailOpen.value=true}
-    catch(e){error.value=errorMessage(e)}finally{loading.value=false}
+    try{const [detail,process,review]=await Promise.all([api.getOrder(order.id),api.getOrderHistory(order.id),api.getReviews(order.id)]);if(revision!==detailRevision||navigation!==navigationRevision)return;selected.value=result(detail);history.value=result(process);reviews.value=result(review);detailOpen.value=true}
+    catch(e){if(revision===detailRevision&&navigation===navigationRevision)error.value=errorMessage(e)}finally{if(revision===detailRevision)loading.value=false}
   }
-  const intake=reactive(useRepairIntake(error,async order=>{await load();await showDetail(order)}))
+  const intake=reactive(useRepairIntake(error,async order=>{summaryKey='';if(activePage()){void load();await showDetail(order)}}))
   const startCreate=()=>intake.start(businessProjectId.value)
   // 选项目后只请求该项目配置；切换时立即清空旧选项和已选值。
   let configurationRequest = 0
@@ -136,15 +152,34 @@ export function useOrders() {
     const page=result(await api.queryConfigurations({paging:false,terms:[{column:'enabled',value:true},{column:'businessProjectId',value:projectId}]}))
     if(sequence===configurationRequest)configurations.value=page.data
   }
+  const searchAssignees=(text:string,immediate=false)=>{
+    clearTimeout(peopleSearchTimer)
+    const revision=++peopleRevision,actionRequest=actionRevision,order=selected.value,name=action.value
+    if(!order)return
+    peopleLoading.value=true;peopleError.value=''
+    people.value=people.value.filter(person=>person.id===actionForm.assignedUserId)
+    peopleSearchTimer=setTimeout(async()=>{
+      try{
+        const candidates=result(await api.getAssignees(order.id,name,text.trim(),text.trim()?20:5))
+        if(revision!==peopleRevision||actionRequest!==actionRevision)return
+        const chosen=people.value.find(person=>person.id===actionForm.assignedUserId)
+        people.value=candidates.filter(person=>name!=='transfer'||person.id!==order.assignedUserId)
+        if(chosen&&!people.value.some(person=>person.id===chosen.id))people.value.unshift(chosen)
+      }catch(e){if(revision===peopleRevision&&actionRequest===actionRevision)peopleError.value=errorMessage(e)}
+      finally{if(revision===peopleRevision)peopleLoading.value=false}
+    },immediate?0:300)
+  }
   const requestId=ref('')
   const startAction=async(name:string)=>{
-    if(!selected.value)return
-    action.value=name;error.value='';people.value=[]
+    if(!selected.value||saving.value)return
+    const revision=++actionRevision,navigation=navigationRevision,order=selected.value
+    peopleRevision++;clearTimeout(peopleSearchTimer);peopleLoading.value=false
+    action.value=name;error.value='';optionsError.value=false;people.value=[]
     Object.assign(actionForm,{assignedUserId:undefined,description:'',levelId:undefined,rework:false,photoId:undefined,attachmentIds:[],reason:'',reply:'',delayUntil:undefined,reviewId:undefined,approved:true,satisfaction:undefined,satisfactionId:undefined,satisfactionName:undefined,evaluationLabelNames:[],replyId:undefined,evaluationLabelIds:[],callbackMethod:name==='callback'?'电话':undefined,callbackResult:name==='callback'?'有效':undefined,callbackTime:name==='callback'?Date.now():undefined,callbackPerson:name==='callback'?(authorization.value?.user.name||authorization.value?.user.username):undefined,categoryId:undefined,labelIds:[],materialAmount:undefined,artificialAmount:undefined,signatureFileId:undefined,ownerName:undefined,ownerPhone:undefined})
-    requestId.value=crypto.randomUUID();saving.value=true
+    requestId.value=crypto.randomUUID();actionUploading.value=false;optionsLoading.value=true;actionOpen.value=true
     try{
-      if(['dispatch','transfer'].includes(name))people.value=result(await api.getAssignees(selected.value.id,name)).filter(row=>name!=='transfer'||row.id!==selected.value?.assignedUserId)
       if(['follow','finish','quote','changeLevel','changeCategory','evaluate','ownerEvaluate','callback','close'].includes(name))await loadConfigurations(selected.value.businessProjectId)
+      if(revision!==actionRevision||navigation!==navigationRevision)return
       if(name==='review')actionForm.reviewId=reviews.value.find(row=>row.status===1)?.id
       if(['follow','finish','quote','close'].includes(name))actionForm.replyId=replyOptions.value[0]?.value
       if(name==='finish'){
@@ -154,15 +189,17 @@ export function useOrders() {
         if(quote)restoreCompletionForm(actionForm,selected.value,quote)
       }
       actionOpen.value=true
+      if(['dispatch','transfer'].includes(name))searchAssignees('',true)
       await nextTick();actionFormRef.value?.clearValidate()
-    }catch(e){error.value=errorMessage(e)}finally{saving.value=false}
+    }catch(e){if(revision===actionRevision&&navigation===navigationRevision){optionsError.value=true;error.value=errorMessage(e)}}finally{if(revision===actionRevision)optionsLoading.value=false}
   }
   const submitAction=async()=>{
-    if(!selected.value)return
+    if(!selected.value||optionsLoading.value||saving.value||optionsError.value)return
+    const navigation=navigationRevision,name=action.value
     if(actionUploading.value){message.warning(t('ReportRepair.waitForAttachmentsToFinishUploading'));return}
     try{await actionFormRef.value?.validate()}catch{return}
     saving.value=true;error.value=''
-    try{const order=result(await api.actOnOrder(selected.value,action.value,actionForm,requestId.value));actionOpen.value=false;await load();await showDetail(order);message.success(t('ReportRepair.succeeded', { p0: actionNames[action.value] }))}
+    try{const order=result(await api.actOnOrder(selected.value,action.value,actionForm,requestId.value));summaryKey='';if(navigation===navigationRevision){actionOpen.value=false;void load();await showDetail(order)};message.success(t('ReportRepair.succeeded', { p0: actionNames[name] }))}
     catch(e){error.value=errorMessage(e)}finally{saving.value=false}
   }
   const changeCompletionType=async(name:string)=>{
@@ -171,8 +208,17 @@ export function useOrders() {
     await nextTick();actionFormRef.value?.clearValidate()
   }
   let ready=false
-  watch(()=>[route.path,route.query.q],()=>{if(ready&&(encodedQuery()!==(route.query.q||''))){restoreQuery();current.value=1;void load()}})
-  watch(auditMode,()=>{if(ready){restoreQuery();current.value=1;void load()}})
+  const resetTransient=()=>{
+    peopleRevision++;clearTimeout(peopleSearchTimer);peopleLoading.value=false
+    navigationRevision++;detailRevision++;actionRevision++;configurationRequest++;queryRevision++;summaryRevision++
+    intake.open=false;detailOpen.value=false;actionOpen.value=false;exportOpen.value=false;printOpen.value=false
+    optionsLoading.value=false;loading.value=false;actionUploading.value=false;error.value='';summaryKey=''
+    disposePrint?.()
+  }
+  watch(()=>route.path,()=>{resetTransient();if(ready&&activePage()){restoreQuery();current.value=1;void load()}})
+  watch(()=>route.query.q,()=>{if(ready&&activePage()&&encodedQuery()!==(route.query.q||'')){restoreQuery();current.value=1;void load()}})
+  watch(actionOpen,open=>{if(!open){actionRevision++;configurationRequest++;optionsLoading.value=false;peopleRevision++;clearTimeout(peopleSearchTimer);peopleLoading.value=false}})
+  onDeactivated(resetTransient)
   onMounted(async()=>{try{await loadOptions();restoreQuery();ready=true;await load()}catch(e){error.value=errorMessage(e)}})
-  return {counts,orderStatusTabs,changeStatusTab,exportOpen,exportScope,exporting,exportError,startExport,exportOrders,canPrint,printOpen,printElement,startPrint,printSelected,searchTerms,actionFormRef,completionReadOnly,completionTypes,actionCategoryTree,actionCategoryPath,changeCompletionType,auditMode,reviewStatus,reviewKind,satisfactions,evaluationLabelOptions,replyOptions,filterFields,search,actionUploading,categoryOptions,labelOptions,intake,rows,total,current,loading,saving,error,businessProjectId,status,projectOptions,personOptions,configOptions,can,availableActions,detailOpen,actionOpen,selected,history,reviews,configurations,action,actionForm,load,pageChange,filter,startCreate,showDetail,startAction,submitAction}
+  return {peopleError,peopleLoading,searchAssignees,optionsError,optionsLoading,counts,orderStatusTabs,changeStatusTab,exportOpen,exportScope,exporting,exportError,startExport,exportOrders,canPrint,printOpen,printElement,startPrint,printSelected,searchTerms,actionFormRef,completionReadOnly,completionTypes,actionCategoryTree,actionCategoryPath,changeCompletionType,auditMode,reviewStatus,reviewKind,satisfactions,evaluationLabelOptions,replyOptions,filterFields,search,actionUploading,categoryOptions,labelOptions,intake,rows,total,current,loading,saving,error,businessProjectId,status,projectOptions,personOptions,configOptions,can,availableActions,detailOpen,actionOpen,selected,history,reviews,configurations,action,actionForm,load,pageChange,filter,startCreate,showDetail,startAction,submitAction}
 }
