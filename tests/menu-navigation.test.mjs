@@ -52,6 +52,21 @@ test('报修不再重复初始化公共管理菜单，部署业务授权无重�
   }
 })
 
+test('后端业务授权保留系统根及层级，根节点不新增业务权限', () => {
+  const root = grants.menus.find(node => node.id === rootId)
+  assert(root)
+  assert.deepEqual(root.permissions || [], [])
+  assert.deepEqual(root.buttons || [], [])
+  assert.deepEqual(root.assetAccesses || [], [])
+  for (const granted of grants.menus) {
+    const definition = definitions.find(node => node.id === granted.id)
+    assert(definition, granted.id)
+    for (const key of ['parentId', 'path', 'level', 'code', 'url']) {
+      assert.deepEqual(granted[key], definition[key], `${granted.id}:${key}`)
+    }
+  }
+})
+
 const authorizedMenus = () => [{id:rootId,code:rootId,name:'报事报修',children:[
   {id:'overview',code:'overview'},
   {id:'processing',code:'processing',buttons:[{id:'query'}],assetAccesses:[{type:'organization'}],children:[{id:'records'}]},
