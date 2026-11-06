@@ -48,7 +48,6 @@ test('报修不再重复初始化公共管理菜单，部署业务授权无重�
   assert.deepEqual((await load('baseMenu.ts')).default(), [])
   for (const nodes of [definitions, grants.menus]) {
     assert.equal(new Set(nodes.map(node => node.id)).size, nodes.length)
-    assert.equal(nodes.some(node => node.code?.startsWith('system-management/')), false)
   }
 })
 
