@@ -1,6 +1,6 @@
 /** 当前 SaaS 报修 API 的跨端数据契约；工单状态和权限以服务端结果为准。 */
 export interface Session {token:string;tenantDomain:string;applicationId:string}
-export interface RuntimeConfig {applicationId:string;tenantDomain:string;title:string;allowedHostOrigins:string[];apiBase:string}
+export interface RuntimeConfig {applicationId:string;title:string;allowedHostOrigins:string[];apiBase:string}
 export interface Authorization {user:{id:string;name?:string;username?:string};permissions:{id:string;actions:string[]}[];dimensions?:{type:string;id:string}[]}
 export interface Query {pageIndex?:number;pageSize?:number;paging?:boolean;terms?:Term[];sorts?:{name:string;order:'asc'|'desc'}[]}
 export interface Term {column?:string;termType?:string;value?:unknown;type?:'and'|'or';terms?:Term[]}
