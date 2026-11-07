@@ -6,12 +6,13 @@ import { listQuery,type ListMode } from '../services/queries'
 import { state } from '../services/session'
 import {statusOptions,todoStatusOptions} from '../services/labels'
 import {availableActions} from '../services/orderActions'
+import {isOrderScope,orderScopes,orderScopeQuery,orderListTitle} from '../services/navigation'
 import type {Order,SharedRecord} from '../types'
 export function useOrderList(){
  const route=useRoute(),router=useRouter(),mode=computed(()=>(route.query.mode||'pool') as ListMode)
  const rows=ref<Order[]>([]),projects=ref<SharedRecord[]>([]),loading=ref(false),error=ref(''),total=ref(0),page=ref(0)
  const status=ref(Number(route.query.status??-1)),keyword=ref(String(route.query.keyword||'')),warning=ref(String(route.query.warning||'soon')),reviewStatus=ref<number>(Number(route.query.reviewStatus??1)),reviewKind=ref<string|undefined>(typeof route.query.reviewKind==='string'?route.query.reviewKind:undefined)
- const title=computed(()=>({pool:'工单池',todo:'我的待办',related:'与我相关',paid:'有偿报事',review:'报事审核',warning:'物业预警',unfinished:'未完成报事'}[mode.value]||'工单池'))
+ const title=computed(()=>orderListTitle(mode.value)),showScopes=computed(()=>isOrderScope(mode.value))
  const tabs=computed(()=>mode.value==='todo'?todoStatusOptions:statusOptions)
  const purpose=computed(()=>mode.value==='todo'&&status.value===9?'需要我审核的申请，包含延期、废弃、等级变更等':({pool:'权限范围内的全部工单',todo:'当前需要我接单、跟进、回访或审核的工单',related:'我登记、负责或参与过的工单',paid:'',review:'',warning:'',unfinished:''}[mode.value]||''))
  let sequence=0
@@ -23,6 +24,10 @@ export function useOrderList(){
   const query={...route.query,status:status.value,keyword:keyword.value||undefined,warning:warning.value,reviewStatus:reviewStatus.value,reviewKind:reviewKind.value||undefined}
   if(router.resolve({path:route.path,query}).fullPath===route.fullPath){void load();return}
   void router.replace({query})
+ }
+ const selectScope=(value:string|number)=>{
+  if(!isOrderScope(value)||value===mode.value)return
+  void router.push({path:'/orders',query:orderScopeQuery(route.query,value)})
  }
  const open=(o:Order)=>router.push('/orders/'+o.id)
  // 列表仅提供不依赖流程配置的快捷入口；动作页加载最新审核、权限和版本后再允许提交。
@@ -40,5 +45,5 @@ export function useOrderList(){
  })
  watch(()=>state.projectId,()=>void load())
  onMounted(async()=>{try{projects.value=(await api.projects()).data}catch(e){error.value=errorText(e)}await load()})
- return{mode,title,tabs,purpose,rows,projects,loading,error,total,status,keyword,warning,reviewStatus,reviewKind,search,load,open,cardActions,perform,state}
+ return{mode,title,showScopes,scopes:orderScopes,selectScope,tabs,purpose,rows,projects,loading,error,total,status,keyword,warning,reviewStatus,reviewKind,search,load,open,cardActions,perform,state}
 }

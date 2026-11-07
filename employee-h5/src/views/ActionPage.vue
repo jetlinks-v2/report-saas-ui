@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {reactive} from 'vue'
+import {ToolOutlined} from '@ant-design/icons-vue'
 import dayjs from 'dayjs'
 import {useAction} from '../hooks/useAction'
 import {can} from '../services/session'
@@ -11,7 +12,7 @@ import OrderSteps from '../components/OrderSteps.vue'
 const model=useAction(),formRef=model.formRef,vm=reactive(model)
 </script>
 <template><section class="page form-page"><a-alert v-if="vm.error" :message="vm.error" type="error" show-icon /><a-spin :spinning="vm.loading"><template v-if="vm.order"><OrderSteps :status="vm.order.status" /><div class="order-context"><strong>{{vm.order.number}}</strong><p>{{vm.order.description||vm.order.title}}</p></div>
- <a-form ref="formRef" :model="vm.input" :rules="vm.rules" layout="horizontal" @finish="vm.save"><div class="panel form-card"><h2>{{actionNames[vm.action]}}信息</h2>
+ <a-form ref="formRef" :model="vm.input" :rules="vm.rules" layout="horizontal" @finish="vm.save"><div class="panel form-card"><h2 class="icon-heading"><ToolOutlined aria-hidden="true" />{{actionNames[vm.action]}}信息</h2>
  <a-form-item v-if="['finish','quote','close'].includes(vm.action)" label="关单类型"><a-select :value="vm.action==='close'?'close':'finish'" :disabled="vm.order.paid||vm.readOnly" :options="[{value:'finish',label:'正常关单'},...can('close')?[{value:'close',label:'非正常关单'}]:[]]" @change="vm.changeType" /></a-form-item>
  <template v-if="vm.action==='quote'||vm.action==='finish'&&vm.order.paid"><a-form-item label="材料费" :name="vm.action==='quote'?'materialAmount':undefined"><a-input-number v-model:value="vm.input.materialAmount" :min="0" :precision="2" :disabled="vm.action==='finish'" /></a-form-item><a-form-item label="人工费" :name="vm.action==='quote'?'artificialAmount':undefined"><a-input-number v-model:value="vm.input.artificialAmount" :min="0" :precision="2" :disabled="vm.action==='finish'" /></a-form-item><p>合计费用：¥ {{money(Number(vm.input.materialAmount||0)+Number(vm.input.artificialAmount||0))}}</p></template>
  <a-form-item v-if="['dispatch','transfer'].includes(vm.action)" label="责任人" name="assignedUserId"><a-select v-model:value="vm.input.assignedUserId" :options="vm.peopleOptions" show-search option-filter-prop="label" placeholder="选择获授权的维修员工" /></a-form-item>

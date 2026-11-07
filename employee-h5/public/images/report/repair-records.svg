@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="200" viewBox="0 0 240 200" fill="none">
+ <defs><linearGradient id="sheet" x1="69" y1="28" x2="153" y2="165" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"/><stop offset="1" stop-color="#e0eeff"/></linearGradient><linearGradient id="badge" x1="147" y1="112" x2="187" y2="163" gradientUnits="userSpaceOnUse"><stop stop-color="#71b0ff"/><stop offset="1" stop-color="#1677ff"/></linearGradient></defs>
+ <circle cx="117" cy="99" r="76" fill="#e0eeff"/>
+ <ellipse cx="119" cy="180" rx="72" ry="7" fill="#b6d4f8" opacity=".35"/>
+ <rect x="66" y="34" width="108" height="139" rx="12" fill="#afcfff" transform="rotate(9 120 103)"/>
+ <rect x="58" y="25" width="106" height="140" rx="12" fill="url(#sheet)" stroke="#b4d4ff" stroke-width="2" transform="rotate(-7 111 95)"/>
+ <g transform="rotate(-7 111 95)"><rect x="74" y="45" width="33" height="7" rx="3.5" fill="#70a9f5"/><path d="M75 72h14m14 0h41M75 96h14m14 0h41M75 120h14m14 0h30" stroke="#bad6fa" stroke-width="6" stroke-linecap="round"/><rect x="74" y="137" width="51" height="5" rx="2.5" fill="#d6e6fa"/></g>
+ <circle cx="170" cy="140" r="31" fill="url(#badge)" stroke="#fff" stroke-width="5"/>
+ <path d="M170 123v18l11 7M151 140a19 19 0 0 1 31-15" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>
+ <circle cx="203" cy="57" r="7" fill="#bdd9ff"/><path d="M35 131h10m-5-5v10M184 25v10m-5-5h10" stroke="#a1c8fb" stroke-width="3" stroke-linecap="round"/>
+</svg>
