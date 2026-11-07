@@ -4,7 +4,7 @@
 
 ## Cloud PC 接入
 
-主工程为 `jetlinks-v2/saas-runtime-ui` 的 `property/2.20-dev`，通过 Git 子模块固定本仓库提交，路径保持 `modules/report-repair-ui`，模块名仍为 `report-repair-ui`。
+主工程为 `jetlinks-v2/saas-runtime-ui` 的 `property/2.20-dev`，通过 Git 子模块固定本仓库 `2.20` 分支的提交，路径保持 `modules/report-repair-ui`，模块名仍为 `report-repair-ui`。
 
 ```sh
 git clone --branch property/2.20-dev --recurse-submodules git@github.com:jetlinks-v2/saas-runtime-ui.git
@@ -22,7 +22,7 @@ pnpm exec vue-tsc --noEmit -p modules/report-repair-ui/tsconfig.json
 
 `index.ts` 和独立构建的 `register.ts` 使用同一注册入口，包含应用页面、匿名二维码路由与工单提示音扩展。PC 类型检查排除独立 H5，H5 按自己的依赖和 tsconfig 验证。主工程工作区配置同样排除 H5 包，避免两套 Vue 依赖混用。
 
-后端为 `jetlinks-v2/property-management` 的 `2.20`，独立报修服务通过网关提供 `/repair/**`，基础服务提供 `/property/**`。两个服务须同时启动；项目、用户身份和空间绑定以基础模块为准，PC 与 H5 共用。菜单模板位于后端 `deploy/repair`，新环境需配置应用模板、订阅快照与角色授权。
+后端为 `jetlinks-v2/property-management` 的 `2.20`，独立报修服务通过网关提供 `/repair/**`，基础服务提供 `/property/**`。两个服务须同时启动；项目、用户身份和空间绑定以基础模块为准，PC 与 H5 共用。完整菜单定义维护在本仓库 `baseMenu.json`，由 `baseMenu.ts` 提供给宿主初始化；新环境仍需配置应用模板、订阅快照与角色授权。
 
 ## 员工 H5
 
@@ -43,7 +43,7 @@ docker compose -f compose.yml up -d --build
 
 当前页面已接入延期/废弃/非正常关单与等级审核、转派/抢单、回访、双侧评价、签字、有偿费用和报表导出。业主评价/签字由员工后台代登记，业主信息与登记员工分开显示。Cloud 站内通知已接入原生消息中心；匿名二维码配置与公开表单、受限上传和提交已接通。其他通知渠道、业主本人入口和查验联动仍按约定边界处理；设备与第三方开放接口本轮暂不接入；不能把菜单预览作为已迁移的业务能力。工程构建、API 和浏览器验收由后端项目与本地验证记录统一说明。
 
-模块包含独立构建需要的 `register.ts`、`baseMenu.ts` 与 `baseMenu.json`。`baseMenu.json` 提供“报事报修”根节点及系统管理菜单，业务菜单继续使用后端部署模板；实际授权统一由应用模板、服务套餐与角色维护。配置按业务项目筛选；切换发起项目时清空已选分类、渠道和空间。派单选项从后端目标工单的候选人接口读取，不以员工目录直接作为维修员列表。模块可独立构建；全工作区类型检查仍可能报告既有共享核心及依赖错误。
+模块包含独立构建需要的 `register.ts`、`baseMenu.ts` 与 `baseMenu.json`。`baseMenu.json` 提供全部39个菜单定义，包含报修根节点、首页、处理、统计、配置、系统管理及保留的历史节点。菜单保留原 ID、URL、组件编码、按钮、资产类型与中英文资源，`showPage` 按后端功能权限参与宿主初始化筛选，`baseMenu.ts` 递归补齐 `runtime` 和 `options.appName`。历史节点的隐藏状态和未授权范围保持原定义；实际授权由应用模板、服务套餐与角色维护。配置按业务项目筛选；切换发起项目时清空已选分类、渠道和空间。派单选项从后端目标工单的候选人接口读取，不以员工目录直接作为维修员列表。模块可独立构建；全工作区类型检查仍可能报告既有共享核心及依赖错误。
 
 ## 菜单分组与应用导航
 
@@ -51,7 +51,7 @@ docker compose -f compose.yml up -d --build
 
 `index.ts` 通过宿主现有 `getMenuFilters` 注册 `services/menuNavigation.ts`。仅在独立应用上下文展开报修根节点一层，继续显示原有业务分组及二级页面；项目上下文和权限编辑树保留根节点。过滤器只处理服务端已授权的子项，不依据源码生成菜单，也不展开其他系统的根节点。
 
-后端 `deploy/repair/menus.json` 同步保存父级及树路径，`template-grant.json` 保留原业务授权并增加无按钮、无业务权限的根分组。已有环境应先发布含此过滤器的运行端前端，再通过菜单树保存接口增量调整根节点和五个分组父级，由平台维护树路径；不能全量初始化或覆盖原角色、资产策略。服务套餐及订阅如限制可见菜单，应同步根分组引用，保留原叶子和按钮授权。代码更新不会自动修改已持久化的菜单。
+本仓库 `baseMenu.json` 是报修菜单定义的维护入口，后端 `deploy/repair` 保留部署授权交接材料。已有环境通过宿主菜单配置增量同步定义，再调整应用模板、套餐、项目订阅和角色；由平台维护树路径，保留原叶子、按钮和资产策略。根分组不增加业务权限。代码更新不会自动修改已持久化的菜单或授予业务权限。
 
 新增页面目录后应重启9200的Vite开发进程，使import.meta.glob收集新路由。角色待接单池允许具备接单权限的候选人在详情中发起接单；实际角色及资产资格由后端实时判定。
 
@@ -71,4 +71,4 @@ docker compose -f compose.yml up -d --build
 
 ## 中英文切换
 
-PC 报事报修沿用主工程 `vue-i18n` 与 `locales/lang/zh.json`、`en.json` 的自动加载机制，页面、处理表单、配置、统计、导出、打印及匿名二维码表单的固定文案统一放在 `ReportRepair` 命名空间。右上角切换语言会按主工程既有行为刷新页面；日期也随当前语言显示。菜单与按钮的中英文元数据同步保存在后端 `deploy/repair/menus.json` 和 `template-grant.json`；旧环境保留的中文 `i18nName` 由语言包中的兼容入口解析。系统管理继续使用已有 `ReportSystem` 资源。用户录入的分类、项目、描述等业务数据保留原文，回访方式/结果提交值及后台渠道匹配不随语言改变。员工 H5 是独立应用，不属于 PC 右上角语言开关的范围。
+PC 报事报修沿用主工程 `vue-i18n` 与 `locales/lang/zh.json`、`en.json` 的自动加载机制，页面、处理表单、配置、统计、导出、打印及匿名二维码表单的固定文案统一放在 `ReportRepair` 命名空间。右上角切换语言会按主工程既有行为刷新页面；日期也随当前语言显示。菜单与按钮的中英文元数据维护在前端 `baseMenu.json`；旧环境保留的中文 `i18nName` 由语言包中的兼容入口解析。系统管理继续使用已有 `ReportSystem` 资源。用户录入的分类、项目、描述等业务数据保留原文，回访方式/结果提交值及后台渠道匹配不随语言改变。员工 H5 是独立应用，不属于 PC 右上角语言开关的范围。
