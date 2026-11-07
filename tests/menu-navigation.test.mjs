@@ -37,30 +37,24 @@ const {repairMenuFilter} = await load('services/menuNavigation.ts')
 const filter = repairMenuFilter.filter
 const application = {applicationScope:'test-repair-app'}
 
-test('根节点复用旧 ID，系统管理五个原授权节点复用公共页面', async () => {
+test('根节点复用旧 ID，仅维护报事业务菜单', async () => {
   const [menu] = (await load('baseMenu.ts')).default()
   assert.equal(menu.id,rootId)
   assert.equal(menu.name,'报事报修')
   assert.equal(menu.options.show,true)
   assert.equal(menu.options.appName,'report-repair-ui')
-  assert.equal(menu.children.at(-1).id,'repair-system-basic')
-  assert.deepEqual(menu.children.at(-1).children.map(node=>node.id), [
-    'repair-system-OrganizationType','repair-system-User','repair-system-Space','repair-system-Customer','repair-system-Dictionary',
-  ])
-  assert.deepEqual(menu.children.at(-1).children.map(node=>node.options.meta.componentCode), [
-    'charging/OrganizationType','charging/User','charging/Space','charging/Customer','charging/Dictionary',
-  ])
+  assert(!flatten([menu]).some(node=>node.id.startsWith('repair-system-') || node.code?.startsWith('system-management/')))
 })
 
-test('前端独立提供全部39个菜单，业务分组、组件、按钮和资产权限完整', () => {
+test('前端独立提供33个业务菜单，业务分组、组件、按钮和资产权限完整', () => {
   const definitions = flatten(menuDefinitions)
-  assert.equal(definitions.length,39)
+  assert.equal(definitions.length,33)
   assert.equal(new Set(definitions.map(node=>node.id)).size,definitions.length)
   const [menuRoot] = menuDefinitions
   assert.equal(menuRoot.id,rootId)
   assert.deepEqual(menuRoot.permissions,[])
   assert.deepEqual(menuRoot.buttons,[])
-  assert.deepEqual(menuRoot.children.map(node=>node.name),['首页统计','报事处理','报事统计','报事配置','承接查验','系统管理'])
+  assert.deepEqual(menuRoot.children.map(node=>node.name),['首页统计','报事处理','报事统计','报事配置','承接查验'])
   const records = definitions.find(node=>node.id==='repair-ae6a50b29308426b932b94d33f8bab18')
   assert.equal(records.url,'/businessProcessing/reportedThatRecords')
   assert.equal(records.options.meta.componentCode,'repair/Orders')
@@ -85,7 +79,7 @@ test('宿主初始化能按后端权限保留完整业务树，并过滤未授�
   const filterByPermission = module.exports.default
   const permissions = [...new Set(flatten(menuDefinitions).flatMap(node=>node.showPage || []))]
   const menus = filterByPermission(permissions,structuredClone(menuDefinitions),true)
-  assert.deepEqual(menus[0].children.map(node=>node.name),['首页统计','报事处理','报事统计','报事配置','系统管理'])
+  assert.deepEqual(menus[0].children.map(node=>node.name),['首页统计','报事处理','报事统计','报事配置'])
   const actualIds = new Set(flatten(menus).map(node=>node.id))
   for (const id of ['repair-ae6a50b29308426b932b94d33f8bab18','repair-75a9b512659a4a5aa0ed2157ae4d0cd9','repair-b3df273261f340a4bef03c55817c9d81','repair-qr-configuration','repair-0593f6e90e2c4b30a6b2e9f2c73d4106']) {
     assert(actualIds.has(id),id)
@@ -103,14 +97,17 @@ test('项目上下文及无应用上下文保持完整授权树', () => {
   }
 })
 
-test('独立应用只展开报修根，二级页面、按钮和数据范围不变，系统管理末位', () => {
+test('独立应用只展开报修根，公共基础菜单独立保留且不补授权', () => {
   const menus = structuredClone(menuDefinitions), before = structuredClone(menus)
-  const system = menus[0].children.pop()
-  menus[0].children.unshift(system)
+  const basic = {id:'charging/basic',code:'charging/basic',children:[{id:'charging/Space',code:'charging/Space'}]}
+  menus.push(basic)
   const navigation = filter(menus,application)
-  assert.deepEqual(navigation,before[0].children)
-  assert.deepEqual(menus[0].children,[system,...before[0].children.slice(0,-1)])
+  assert.deepEqual(navigation,[...before[0].children,basic])
+  assert.equal(navigation.at(-1),basic)
+  assert.deepEqual(menus,[...before,basic])
   assert.deepEqual(filter(navigation,application),navigation)
+  assert.deepEqual(filter(before,application),before[0].children)
+  assert.equal(filter(menus,{applicationScope:'__jetlinks_project__'}),menus)
 })
 
 test('不补未授权菜单，不改其他系统，不展开项目内其他根节点', () => {

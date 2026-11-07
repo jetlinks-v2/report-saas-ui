@@ -71,15 +71,14 @@ test('project scope reaches public API and space normalization keeps hierarchy a
   await assert.rejects(api.queryProjectSpaces('p3'), error => error === denied)
 })
 
-test('报修保留原系统管理授权节点并复用公共页面，不复制公共菜单ID或页面实现', () => {
+test('报修直接加载公共基础模块，不复制系统管理菜单或页面实现', () => {
   const menus = JSON.parse(readFileSync(new URL('../baseMenu.json', import.meta.url), 'utf8'))
-  const system = menus[0].children.find(menu => menu.id === 'repair-system-basic')
-  assert.equal(system.children.length, 5)
-  for (const menu of system.children) {
-    assert(menu.id.startsWith('repair-system-'))
-    assert(menu.options.meta.componentCode.startsWith('charging/'))
-    assert(menu.url.startsWith('/repair/system/'))
-  }
+  const flatten = nodes => nodes.flatMap(node => [node, ...flatten(node.children || [])])
+  assert(!flatten(menus).some(menu => menu.id.startsWith('repair-system-')
+    || menu.code?.startsWith('system-management/') || menu.code?.startsWith('charging/')))
+  const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
+  assert(pkg.scripts.dev.includes('report-repair-ui,property-base-ui'))
+  assert(pkg.scripts['build:with-base'].includes('report-repair-ui,property-base-ui'))
   for (const path of ['api/system-management', 'hooks/system-management', 'views/system-management', 'utils/system-management']) {
     assert.equal(existsSync(new URL(`../${path}`, import.meta.url)), false, path)
   }
