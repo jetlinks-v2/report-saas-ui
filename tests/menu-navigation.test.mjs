@@ -37,7 +37,7 @@ const {repairMenuFilter} = await load('services/menuNavigation.ts')
 const filter = repairMenuFilter.filter
 const application = {applicationScope:'test-repair-app'}
 
-test('根节点复用旧 ID，系统管理保留原菜单及五个页面', async () => {
+test('根节点复用旧 ID，系统管理五个原授权节点复用公共页面', async () => {
   const [menu] = (await load('baseMenu.ts')).default()
   assert.equal(menu.id,rootId)
   assert.equal(menu.name,'报事报修')
@@ -46,6 +46,9 @@ test('根节点复用旧 ID，系统管理保留原菜单及五个页面', async
   assert.equal(menu.children.at(-1).id,'repair-system-basic')
   assert.deepEqual(menu.children.at(-1).children.map(node=>node.id), [
     'repair-system-OrganizationType','repair-system-User','repair-system-Space','repair-system-Customer','repair-system-Dictionary',
+  ])
+  assert.deepEqual(menu.children.at(-1).children.map(node=>node.options.meta.componentCode), [
+    'charging/OrganizationType','charging/User','charging/Space','charging/Customer','charging/Dictionary',
   ])
 })
 
@@ -66,7 +69,8 @@ test('前端独立提供全部39个菜单，业务分组、组件、按钮和资
   for (const menu of definitions.filter(node=>node.showPage?.length && node.options?.show !== false)) {
     const component = menu.options?.meta?.componentCode
     assert(component,menu.id)
-    assert(existsSync(resolve(root,'views',component,'index.vue')),component)
+    const moduleRoot = component.startsWith('charging/') ? resolve(host,'modules/property-base-ui') : root
+    assert(existsSync(resolve(moduleRoot,'views',component,'index.vue')),component)
   }
 })
 

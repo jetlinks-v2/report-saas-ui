@@ -16,7 +16,7 @@
           </a-list-item>
         </template>
       </a-list>
-      <a-button block :disabled="saving" @click="load()">{{$t('ReportRepair.refresh')}}</a-button>
+
     </a-card>
     <div class="level-detail">
       <a-card :title="$t('ReportRepair.priorityProperties')" :bordered="false">

@@ -61,15 +61,26 @@ export function useConfiguration() {
   const qr=useQrConfiguration(form,related)
   const formSettings=useRepairFormOptions()
   let sequence=0
-  const load = async () => {
+  // 关联选项只在本页实例内复用；显式刷新和写入后重新读取，不跨账号或应用共享。
+  let relatedRequest: Promise<Configuration[]> | undefined
+  const relatedKinds = () => isFlow.value ? ['category'] :
+    ({category:['category','satisfaction'],label:['category'],description:['category','label'],qr:['category','channel']} as Record<string,string[]>)[actualKind.value] || []
+  const readRelated = (refresh:boolean) => {
+    if(refresh)relatedRequest=undefined
+    const kinds=relatedKinds()
+    if(!kinds.length)return Promise.resolve([] as Configuration[])
+    return relatedRequest ??= queryConfigurations({paging:false,terms:[{column:'kind',termType:'in',value:kinds}]})
+      .then(response=>result(response).data).catch(error=>{relatedRequest=undefined;throw error})
+  }
+  const load = async (refreshRelated = true) => {
     const request=++sequence
     loading.value = true; error.value = ''
     try {
       const terms: object[] = [{ column: 'kind', value: actualKind.value }]
       if (businessProjectId.value) terms.push({ column: 'businessProjectId', value: businessProjectId.value })
-      const all = result(await queryConfigurations({paging:false}))
+      const all = await readRelated(refreshRelated)
       if(request!==sequence)return
-      related.value=all.data
+      related.value=all
       // 原流程列表显示各层级已配置的分类；按工单实际分类匹配，不继承父级流程。
       if(isFlow.value) {
         const ids=flowCategories.value.filter(row=>flowConfigured(row.configuration)).map(row=>row.id)
@@ -127,8 +138,8 @@ export function useConfiguration() {
     catch (e) { error.value = errorMessage(e) } finally { saving.value = false }
   }
   const search=()=>{const q=encodeConditionFilterQuery(filterTerms.value,filterFields.value)||undefined;if(q!==route.query.q)void router.replace({query:{...route.query,q}})}
-  watch(()=>route.query.q,()=>{filterTerms.value=decodeConditionFilterQuery(route.query.q,filterFields.value);current.value=1;void load()})
-  const pageChange = (page: { current?: number }) => { current.value = page.current || 1; void load() }
+  watch(()=>route.query.q,()=>{filterTerms.value=decodeConditionFilterQuery(route.query.q,filterFields.value);current.value=1;void load(false)})
+  const pageChange = (page: { current?: number }) => { current.value = page.current || 1; void load(false) }
   watch([actualKind, businessProjectId, isFlow], () => { current.value = 1; void load() })
   watch(kind,()=>{descriptions.close();filterTerms.value=decodeConditionFilterQuery(route.query.q,filterFields.value)})
   const toggle = async (row:Configuration) => {
@@ -166,10 +177,14 @@ export function useConfiguration() {
 
   onMounted(async () => {
     try {
-      await loadPermissions()
-      projects.value = result(await queryProjects())
       const applicationId=useBusinessApplicationStore().currentApplication?.id
-      if(applicationId){try{roleOptions.value=result(await queryApplicationRoles(applicationId)).data.map(row=>({value:row.id,label:row.name}))}catch{/* 角色查询权限独立；不阻断字典读取。 */}}
+      await Promise.all([
+        loadPermissions(),
+        queryProjects().then(response=>{projects.value=result(response)}),
+        applicationId?queryApplicationRoles(applicationId).then(response=>{
+          roleOptions.value=result(response).data.map(row=>({value:row.id,label:row.name}))
+        }).catch(()=>{/* 角色查询权限独立；不阻断字典读取。 */}):Promise.resolve(),
+      ])
       filterTerms.value=decodeConditionFilterQuery(route.query.q,filterFields.value)
       await load()
     } catch (e) { error.value = errorMessage(e) }

@@ -5,7 +5,7 @@ import { getImageUrl } from '@jetlinks-web-core/utils'
 const { t } = i18n.global
 
 type ResponseFile = UploadFile<{ success?: boolean; status?: number; result?: { id?: string; accessUrl?: string } }>
-/** 共享 FileUpload 的 value 为单文件 ID，多附件通过完整上传列表汇总，不覆盖其他正在上传的文件。 */
+/** 共享 FileUpload 接受完整文件列表，多附件通过完整上传列表汇总，不覆盖其他正在上传的文件。 */
 export function useAttachments(ids: Ref<string[]>, update: (ids: string[]) => void, busy: (value: boolean) => void) {
   const files = ref<ResponseFile[]>([])
   const fileId = (file: ResponseFile) => file.response?.result?.id || (!file.originFileObj ? file.uid : undefined)
@@ -16,9 +16,10 @@ export function useAttachments(ids: Ref<string[]>, update: (ids: string[]) => vo
   }, { immediate: true })
   const change = (info: UploadChangeParam<ResponseFile>) => {
     files.value = info.fileList
-    busy(info.fileList.some(file => file.status === 'uploading'))
+    busy(info.fileList.some(file => file.status === 'uploading' || file.status === 'error'))
     update(info.fileList.filter(file => file.status === 'done' && (!file.response || file.response.status === 200 || file.response.success))
       .map(fileId).filter((id): id is string => !!id))
   }
-  return { files, change }
+  const remove = (file: ResponseFile) => change({file, fileList:files.value.filter(item=>item.uid!==file.uid)} as UploadChangeParam<ResponseFile>)
+  return { files, change, remove }
 }

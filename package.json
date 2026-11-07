@@ -1,1 +1,11 @@
-{"name":"report-repair-ui","version":"2.20.0","private":true}
+{
+  "name": "report-repair-ui",
+  "version": "2.20.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter jetlinks-web-core dev -- --module-name report-repair-ui,property-base-ui,authentication-manager-ui",
+    "build": "pnpm --filter jetlinks-web-core build -- --module-name report-repair-ui",
+    "build:with-base": "pnpm --filter jetlinks-web-core build -- --module-name report-repair-ui,property-base-ui",
+    "test": "node --test tests/*.test.mjs"
+  }
+}

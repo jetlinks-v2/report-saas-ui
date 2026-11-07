@@ -2229,7 +2229,7 @@
           "show": true,
           "appName": "report-repair-ui",
           "meta": {
-            "componentCode": "system-management/basic"
+            "componentCode": "charging/basic"
           }
         },
         "i18nMessages": {
@@ -2340,7 +2340,7 @@
               "show": true,
               "appName": "report-repair-ui",
               "meta": {
-                "componentCode": "system-management/OrganizationType"
+                "componentCode": "charging/OrganizationType"
               }
             },
             "i18nMessages": {
@@ -2417,7 +2417,7 @@
               "show": true,
               "appName": "report-repair-ui",
               "meta": {
-                "componentCode": "system-management/User"
+                "componentCode": "charging/User"
               }
             },
             "i18nMessages": {
@@ -2560,7 +2560,7 @@
               "show": true,
               "appName": "report-repair-ui",
               "meta": {
-                "componentCode": "system-management/Space"
+                "componentCode": "charging/Space"
               }
             },
             "i18nMessages": {
@@ -2699,7 +2699,7 @@
               "show": true,
               "appName": "report-repair-ui",
               "meta": {
-                "componentCode": "system-management/Customer"
+                "componentCode": "charging/Customer"
               }
             },
             "i18nMessages": {
@@ -2779,7 +2779,7 @@
               "show": true,
               "appName": "report-repair-ui",
               "meta": {
-                "componentCode": "system-management/Dictionary"
+                "componentCode": "charging/Dictionary"
               }
             },
             "i18nMessages": {

@@ -1,6 +1,6 @@
 <template>
   <a-card :title="$t('ReportRepair.operationLogs')">
-    <template #extra><a-button :loading="loading" @click="load">{{$t('ReportRepair.refresh')}}</a-button></template>
+
     <ConditionFilter v-model="terms" :fields="fields" @change="search" />
     <a-alert v-if="error" :message="error" type="error" show-icon style="margin:16px 0" />
     <a-table :data-source="rows" :loading="loading" row-key="id" :scroll="{x:'max-content'}" :pagination="{current,total,pageSize:20,showSizeChanger:false}" @change="pageChange">

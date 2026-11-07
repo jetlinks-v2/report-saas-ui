@@ -15,7 +15,7 @@ export function errorMessage(error: unknown): string {
 
 export const reviewNames:Record<string,string>={delay:t('ReportRepair.extensionReview'),close:t('ReportRepair.abnormalClosureReview'),levelChange:t('ReportRepair.priorityChangeReview'),archive:t('ReportRepair.priorityReviewBeforeArchiving'),abandon:t('ReportRepair.discardReview')}
 
-/** 来源字段保存的是既有中文枚举；未知自定义来源保留原文。 */
+/** 历史导入标记使用业务文案展示；未知自定义来源保留原文。 */
 export const sourceName = (source?: string) => ({
-  '物业自查': t('ReportRepair.propertyInspection'), '业主报事': t('ReportRepair.ownerReport'),
+  legacy: t('ReportRepair.legacyImport'), '物业自查': t('ReportRepair.propertyInspection'), '业主报事': t('ReportRepair.ownerReport'),
 } as Record<string, string>)[source || ''] || source || '—'

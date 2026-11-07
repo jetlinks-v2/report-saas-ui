@@ -1,6 +1,6 @@
 <template>
  <a-card :title="page.title">
-  <template #extra><a-space><a-button :loading="loading" @click="load">{{$t('ReportRepair.refresh')}}</a-button><a-button v-if="canExport" :loading="exporting" @click="startExport">{{$t('ReportRepair.exportData')}}</a-button></a-space></template>
+  <template #extra><a-space><a-button v-if="canExport" :loading="exporting" @click="startExport">{{$t('ReportRepair.exportData')}}</a-button></a-space></template>
   <ConditionFilter v-model="terms" :fields="fields" @change="search" />
   <a-alert v-if="error" :message="error" type="error" show-icon style="margin:16px 0" />
   <a-table v-if="page.mode!=='evaluation'" :columns="columns" :data-source="rows" :loading="loading" row-key="projectId" :scroll="{x:'max-content'}" :pagination="{pageSize:20,showSizeChanger:false}">

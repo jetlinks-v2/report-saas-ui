@@ -95,9 +95,10 @@ export function useRepairIntake(error: Ref<string>, onCreated: (order: Order) =>
     const invalid = intakeError(form, path.value, uploading.value,formFlags.value)
     if (invalid) { message.warning(invalid); return }
     saving.value = true; error.value = ''
+    const originActive = () => open.value
     try {
       const order = result(await api.createOrder({ ...form, contactName: form.contactName.trim() }))
-      open.value = false; await onCreated(order); message.success(t('ReportRepair.issueReported'))
+      const showCreated=originActive();open.value = false;if(showCreated)await onCreated(order); message.success(t('ReportRepair.issueReported'))
     } catch (e) { error.value = errorMessage(e) } finally { saving.value = false }
   }
   return { formFlags,devices,deviceEnabled,deviceOptions,deviceLoading,deviceError,searchDevices,open, saving, loading, uploading, form, path, tree, labels, descriptions, spaceOptions, channelOptions, start, submit, updateDescription }

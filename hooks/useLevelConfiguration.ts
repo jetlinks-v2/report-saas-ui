@@ -70,14 +70,14 @@ export function useLevelConfiguration() {
   watch(businessProjectId, () => { keyword.value = ''; select(); void load(true) })
   onMounted(async () => {
     try {
-      await loadPermissions()
-      projectOptions.value = result(await queryProjects())
-        .map(row => ({ value: row.id, label: displayName(row) }))
       const applicationId = useBusinessApplicationStore().currentApplication?.id
-      if (applicationId) {
-        try { roleOptions.value = result(await queryApplicationRoles(applicationId)).data.map(row => ({ value: row.id, label: row.name })) }
-        catch { /* 角色查询权限独立，不阻断等级读取。 */ }
-      }
+      await Promise.all([
+        loadPermissions(),
+        queryProjects().then(response=>{projectOptions.value=result(response).map(row=>({value:row.id,label:displayName(row)}))}),
+        applicationId?queryApplicationRoles(applicationId).then(response=>{
+          roleOptions.value=result(response).data.map(row=>({value:row.id,label:row.name}))
+        }).catch(()=>{/* 角色查询权限独立，不阻断等级读取。 */}):Promise.resolve(),
+      ])
       businessProjectId.value = projectOptions.value[0]?.value
     } catch (e) { error.value = errorMessage(e) }
   })

@@ -11,9 +11,7 @@ interface TypedRequest {
 }
 // 当前共享包的 request 未导出泛型签名，在 API 边界统一补齐响应类型。
 const apiRequest = request as TypedRequest
-/** 报修选项直接使用统一基础模块；绑定以根空间归属为准。 */
-export const queryProjects = () => apiRequest.get<SharedRecord[]>('/property/space/_projects')
-export const queryProjectSpaces = (projectId: string) => apiRequest.get<SharedRecord[]>('/property/space/_tree?projectId='+encodeURIComponent(projectId))
+export { queryProjects, queryProjectSpaces } from './propertyBase'
 export const queryOrders = (query: Query) => apiRequest.post<Pager<Order>>('/repair/orders/_query', query)
 export const queryOperationLogs = (query:Query) => apiRequest.post<Pager<OperationLog>>('/repair/operation-logs/_query',query)
 export const countOrders = (query: Query) => apiRequest.post<number>('/repair/orders/_count', query)
@@ -26,11 +24,12 @@ export const deleteConfiguration = (id:string) => apiRequest.remove<void>(`/repa
 export const saveConfiguration = (data: Configuration) => apiRequest.post<Configuration>('/repair/configurations', data)
 export const getAuthorization = () => apiRequest.get<Authorization>('/authorize/me')
 
-export const getAssignees = (id: string, action='dispatch') => apiRequest.get<SharedRecord[]>(`/repair/orders/${id}/${action==='transfer'?'transfer-assignees':'assignees'}`)
+export const getAssignees = (id: string, action='dispatch',search='',limit=20) => apiRequest.get<SharedRecord[]>(`/repair/orders/${id}/${action==='transfer'?'transfer-assignees':'assignees'}?${new URLSearchParams({search,limit:String(limit)})}`)
 export const queryApplicationRoles = (applicationId: string) => apiRequest.post<Pager<{id: string; name: string}>>('/role/_query/', {paging:false,terms:[{column:'applicationId',value:applicationId}]})
 
 export const getReviews = (id:string) => apiRequest.get<Review[]>(`/repair/orders/${id}/reviews`)
 
+export const queryStatusCounts = (query:Query) => apiRequest.post<ReportRow[]>('/repair/orders/_status-counts',query)
 export const queryStatistics = (query:Query) => apiRequest.post<ReportRow[]>('/repair/orders/_statistics',query)
 export const createExport = (query:Query,options:{type?:ExportType;reviewStatus?:number;reviewKind?:string}={}) => {
  const params=new URLSearchParams()
