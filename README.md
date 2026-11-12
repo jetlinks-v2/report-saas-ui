@@ -1,6 +1,6 @@
 # 报事报修前端
 
-仓库：`jetlinks-v2/report-saas-ui`，唯一开发主线为 `2.20`；各历史分支的已提交更新统一合入此分支，后续直接在此分支开发。根目录是 Cloud PC 报修模块；`employee-h5/` 是员工手机端独立应用。
+仓库：`jetlinks-v2/report-saas-ui`，唯一开发主线为 `2.20`；各历史分支的已提交更新统一合入此分支，后续直接在此分支开发。本仓库仅维护 Cloud PC 报修模块。员工 H5 已迁至独立仓库 [report-repair-wx-ui](https://github.com/jetlinks-v2/report-repair-wx-ui)。
 
 ## Cloud PC 接入
 
@@ -20,20 +20,15 @@ pnpm --filter report-repair-ui build:with-base
 pnpm exec vue-tsc --noEmit -p modules/report-repair-ui/tsconfig.json
 ```
 
-`index.ts` 和独立构建的 `register.ts` 使用同一注册入口，包含应用页面、匿名二维码路由与工单提示音扩展。PC 类型检查排除独立 H5，H5 按自己的依赖和 tsconfig 验证。主工程工作区配置同样排除 H5 包，避免两套 Vue 依赖混用。
+`index.ts` 和独立构建的 `register.ts` 使用同一注册入口，包含应用页面、匿名二维码路由与工单提示音扩展。PC 与 H5 分仓维护，H5 使用 Vant 4，由统一移动外壳组合构建。
 
 后端为 `jetlinks-v2/property-management` 的 `2.20`，独立报修服务通过网关提供 `/repair/**`，基础服务提供 `/property/**`。两个服务须同时启动；项目、用户身份和空间绑定以基础模块为准，PC 与 H5 共用。完整菜单定义维护在本仓库 `baseMenu.json`，由 `baseMenu.ts` 提供给宿主初始化；新环境仍需配置应用模板、订阅快照与角色授权。
 
 ## 员工 H5
 
-```sh
-cd employee-h5
-npm ci
-npm run build
-docker compose -f compose.yml up -d --build
-```
+独立源码：[report-repair-wx-ui](https://github.com/jetlinks-v2/report-repair-wx-ui)。保留账号密码登录调试入口；正式交付由 [cloud.jetlinks.mobile](https://github.com/jetlinks-v2/cloud.jetlinks.mobile) 组合 `repair-app` 构建，模板编码为 `ReportRepair`。
 
-先修改 `employee-h5/public/config.json` 的租户编码、应用 ID 和宿主来源；Nginx 默认连接同 Docker 网络中的 Cloud 网关。网关服务名不同时修改 `employee-h5/nginx.conf`；网络名通过 `CLOUD_DOCKER_NETWORK` 配置。详见 [员工 H5 说明](employee-h5/README.md)。
+在移动主工程根目录执行 `pnpm install --frozen-lockfile`、`pnpm build:app repair-app`。真实租户、应用授权和请求由外壳提供，部署说明以移动主工程 `docs/mobile-app-modules.md` 为准。
 
 ## 模块能力
 

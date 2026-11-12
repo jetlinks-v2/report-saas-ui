@@ -1,8 +1,0 @@
-{
-  "applicationId": "2117203860047114240",
-  "title": "报事报修",
-  "allowedHostOrigins": [
-    "http://localhost:9200"
-  ],
-  "apiBase": "/api"
-}
