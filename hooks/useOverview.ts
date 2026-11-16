@@ -13,8 +13,8 @@ const { t } = i18n.global
 /** 首页指标、分布与走势共用报事时间范围，钻取保持相同筛选。 */
 export function useOverview() {
   const route=useRoute(),router=useRouter()
-  const loading=ref(false),error=ref(''),period=ref('week')
-  const range=ref<[Dayjs,Dayjs]>([dayjs().startOf('week'),dayjs().endOf('week')])
+  const loading=ref(false),error=ref(''),period=ref('year')
+  const range=ref<[Dayjs,Dayjs]>([dayjs().startOf('year'),dayjs().endOf('year')])
   const summary=ref<ReportRow[]>([])
   const appliedRange=ref<[number,number]>()
   const periodLabel=computed(()=>appliedRange.value?t('ReportRepair.statisticsPeriod',{start:dayjs(appliedRange.value[0]).format('YYYY-MM-DD'),end:dayjs(appliedRange.value[1]).format('YYYY-MM-DD')}):'')
